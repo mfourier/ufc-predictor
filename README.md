@@ -16,10 +16,9 @@ The features considered include:
 - and more...
 
 The features for each fight are modeled as:
-$$
-x = \text{{features\_fighter\_A}} - \text{{features\_fighter\_B}}
-$$
-Where \( x \in \mathbb{R}^n \) is the vector representing the fight, containing the differences in the respective features between Fighter A and Fighter B.
+$$x = \text{features\-fighter\-A} - \text{features\-fighter\-B}$$
+
+Where $$x \in \mathbb{R}^n$$ is the vector representing the fight, containing the differences in the respective features between Fighter A and Fighter B.
 
 The target variable is a binary classification indicating the winner:
 - **1**: Fighter A wins
@@ -28,10 +27,7 @@ The target variable is a binary classification indicating the winner:
 ## Approach
 The model predicts the outcome of a UFC fight by using the difference in features between the two fighters as input. The goal is to create a machine learning model that can accurately predict the winner based on these feature differences.
 
-For each fight, the feature vector \( x \) is calculated as 
-$$ 
-x = \text{{features\_fighter\_A}} - \text{{features\_fighter\_B}} 
-$$
+For each fight, the feature vector $x$  is calculated as $x = \text{features\-fighter\-A} - \text{features\-fighter\-B}$
 The model will be trained on this data to learn the relationship between feature differences and fight outcomes.
 
 ## Models Implemented
