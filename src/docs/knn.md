@@ -10,7 +10,7 @@
 * KNN calculates distances between a new data point and all points in the training set.
 * It selects the "k" nearest neighbors, assigning the majority class or average of the nearest values to the new point.
 
-    $$y^​=\operatorname{majority\_vote}{({y_1​,y_2​,...,y_k​})}$$
+    $$y = \operatorname{majority\_vote}{({y_1,y_2,...,y_k})}$$
 Where $y_i$ is the class label of the i-th nearest neighbor.
 
 🔹 **Advantages**:

@@ -7,6 +7,9 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import GridSearchCV
+from xgboost import XGBClassifier
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.naive_bayes import GaussianNB
 
 class NeuralNetworkModel(nn.Module):
     def __init__(self, input_dim, hidden_layer_sizes=(100,), output_dim=1):
@@ -113,7 +116,23 @@ def build_knn(X_train, y_train):
     print(f"Best Parameters from GridSearchCV: {grid_search.best_params_}")
     
     return grid_search.best_estimator_
+
+def build_adaboost(X_train, y_train):
+    param_grid = {
+        'n_estimators': [50, 100, 200],
+        'learning_rate': [0.01, 0.1, 1.0],
+    }
+    grid_search = GridSearchCV(AdaBoostClassifier(), param_grid, cv=5, scoring='f1')
+    grid_search.fit(X_train, y_train)
     
+    print(f"Best Parameters from GridSearchCV (AdaBoost): {grid_search.best_params_}")
+    return grid_search.best_estimator_
+
+def build_naive_bayes(X_train, y_train):
+    model = GaussianNB()
+    model.fit(X_train, y_train)
+    return model
+
 def get_model(model_name, X_train, y_train):
     if model_name == "svm":
         return build_svm(X_train, y_train)
@@ -125,5 +144,10 @@ def get_model(model_name, X_train, y_train):
         return build_knn(X_train, y_train)
     elif model_name == "neural_network":
         return build_neural_network(X_train, y_train)
+    elif model_name == "adaboost":
+        return build_adaboost(X_train, y_train)
+    elif model_name == "naive_bayes":
+        return build_naive_bayes(X_train, y_train)
     else:
         raise ValueError(f"Modelo '{model_name}' no soportado.")
+
