@@ -6,13 +6,10 @@ The goal of this model is to predict the winner of a UFC fight using a binary cl
 ## Dataset Description
 The dataset consists of fight data, where each fight is represented by the difference in features between two fighters. Each fight, denoted as **x**, is the feature difference between Fighter A and Fighter B. 
 
-The features considered include:
-- **Age**
-- **Height**
-- **Reach**
-- **Weight** (optional)
+The features considered includes:
+- **Stance, Height, Reach, Weight, Current Lose Streak, Current Win Streak, etc...**
 - **Striking Accuracies** (average strikes landed per minute, etc.)
-- **Takedown Accuracy** (optional)
+- **Win by decision splits** 
 - and more...
 
 The features for each fight are modeled as:
@@ -25,10 +22,9 @@ The target variable is a binary classification indicating the winner:
 - **1**: Fighter Blue wins
 
 ## Approach
-The model predicts the outcome of a UFC fight by using the difference in features between the two fighters as input. The goal is to create a machine learning model that can accurately predict the winner based on these feature differences.
-
-For each fight, the feature vector $x$  is calculated as $x = \text{features-fighter-red} - \text{features-fighter-blue}$
-The model will be trained on this data to learn the relationship between feature differences and fight outcomes.
+The model predicts the outcome of a UFC fight by using the difference in features between the two fighters as input, this is, for each fight, the feature vector $x$  is calculated as
+$$x = \text{features-fighter-red} - \text{features-fighter-blue}.$$ 
+The goal is to create a machine learning model that can accurately predict the winner based on these feature differences.
 
 ## Models Implemented
 The following machine learning models have been implemented to predict the fight outcomes:
@@ -37,6 +33,8 @@ The following machine learning models have been implemented to predict the fight
 - **Logistic Regression**
 - **Random Forest**
 - **Neural Networks** (using PyTorch)
+- **AdaBoost**
+- **Naive Bayes**
 
 ## Installation & Usage
 To run the model, follow these steps:
