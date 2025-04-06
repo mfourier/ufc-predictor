@@ -70,6 +70,9 @@ def build_svm(X_train, y_train):
     }
     grid_search = GridSearchCV(SVC(), param_grid, cv=5, scoring='f1')
     grid_search.fit(X_train, y_train)
+
+    # 🔹 Best Score from Grid Search Cross-Validation
+    print(f"Cross-validated F1-score: {grid_search.best_score_:.4f}")
     
     # 🔹 Best Parameters from Grid Search
     print(f"Best Parameters from GridSearchCV: {grid_search.best_params_}")
@@ -84,6 +87,9 @@ def build_random_forest(X_train, y_train):
     grid_search = GridSearchCV(RandomForestClassifier(), param_grid, cv=5, scoring='f1')
     grid_search.fit(X_train, y_train)
 
+    # 🔹 Best Score from Grid Search Cross-Validation
+    print(f"Cross-validated F1-score: {grid_search.best_score_:.4f}")
+    
     # 🔹 Best Parameters from Grid Search
     print(f"Best Parameters from GridSearchCV: {grid_search.best_params_}")
 
@@ -97,6 +103,9 @@ def build_logistic_regression(X_train, y_train):
     grid_search = GridSearchCV(LogisticRegression(), param_grid, cv=5, scoring='f1')
     grid_search.fit(X_train, y_train)
 
+    # 🔹 Best Score from Grid Search Cross-Validation
+    print(f"Cross-validated F1-score: {grid_search.best_score_:.4f}")
+    
     # 🔹 Best Parameters from Grid Search
     print(f"Best Parameters from GridSearchCV: {grid_search.best_params_}")
 
@@ -111,6 +120,9 @@ def build_knn(X_train, y_train):
     grid_search = GridSearchCV(KNeighborsClassifier(), param_grid, cv=5, scoring='f1')
     grid_search.fit(X_train, y_train)
 
+    # 🔹 Best Score from Grid Search Cross-Validation
+    print(f"Best Cross-validated F1-score: {grid_search.best_score_:.4f}")
+
     # 🔹 Best Parameters from Grid Search
     print(f"Best Parameters from GridSearchCV: {grid_search.best_params_}")
     
@@ -123,14 +135,31 @@ def build_adaboost(X_train, y_train):
     }
     grid_search = GridSearchCV(AdaBoostClassifier(), param_grid, cv=5, scoring='f1')
     grid_search.fit(X_train, y_train)
+
+    # 🔹 Best Score from Grid Search Cross-Validation
+    print(f"Best Cross-validated F1-score: {grid_search.best_score_:.4f}")
     
+    # 🔹 Best Parameters from Grid Search
     print(f"Best Parameters from GridSearchCV (AdaBoost): {grid_search.best_params_}")
+    
     return grid_search.best_estimator_
 
 def build_naive_bayes(X_train, y_train):
-    model = GaussianNB()
-    model.fit(X_train, y_train)
-    return model
+    param_grid = {
+        'var_smoothing': [1e-9, 1e-8, 1e-7, 1e-6]  # Ajustamos este parámetro
+    }
+    
+    # Usamos GridSearchCV para encontrar el mejor valor de var_smoothing
+    grid_search = GridSearchCV(GaussianNB(), param_grid, cv=5, scoring='f1')
+    grid_search.fit(X_train, y_train)
+    
+    # 🔹 Best Parameters from Grid Search
+    print(f"Best Parameters from GridSearchCV: {grid_search.best_params_}")
+    
+    # 🔹 Best Score from Grid Search Cross-Validation
+    print(f"Best Cross-validated F1-score: {grid_search.best_score_:.4f}")
+
+    return grid_search.best_estimator_
 
 def get_model(model_name, X_train, y_train):
     if model_name == "svm":
