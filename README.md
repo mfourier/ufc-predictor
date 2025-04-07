@@ -21,14 +21,15 @@ $$x = \text{features-fighter-red} - \text{features-fighter-blue}$$
 The target variable represents the winner of the fight, where **0** indicates that Fighter Red wins, and **1** indicates that Fighter Blue wins.
 
 ## Approach
-The model aims to predict the outcome of UFC fights by analyzing the feature differences between two fighters. Each fight's feature vector $ x $ is the difference between the attributes of Fighter Red and Fighter Blue, capturing the relative strengths and weaknesses of the fighters.
+The model aims to predict the outcome of UFC fights by analyzing the feature differences between two fighters. Each fight's feature vector $x$ is the difference between the attributes of Fighter Red and Fighter Blue, capturing the relative strengths and weaknesses of the fighters.
 
 The machine learning models trained on this feature difference aim to predict whether Fighter Red or Fighter Blue is more likely to win based on historical data and their performance characteristics.
 
 ### Feature Engineering:
 - **Feature Vector Construction**: The feature vector for each fight is represented as:
   $$x = \text{features-fighter-red} - \text{features-fighter-blue}$$
-  This transformation highlights the relative advantages or disadvantages of each fighter in various aspects, such as physical attributes, fighting style, and recent performance trends.
+  
+This transformation highlights the relative advantages or disadvantages of each fighter in various aspects, such as physical attributes, fighting style, and recent performance trends.
 
 ### Classification Task:
 - The task is framed as a binary classification problem, where the model predicts either **0** (Fighter Red wins) or **1** (Fighter Blue wins).
