@@ -7,13 +7,13 @@
 
 🔹 **How KNN Works**  
 1. **Distance Calculation**: For a given test instance, compute the distance to all training instances using a metric like **Euclidean**, **Manhattan**, or **Minkowski** distance.
-2. **Neighbor Selection**: Identify the \( k \) closest data points in the training set.
+2. **Neighbor Selection**: Identify the $k$ closest data points in the training set.
 3. **Prediction**:  
-   - **Classification**: Assign the majority class among the \( k \) neighbors.
-   - **Regression**: Predict the average value of the \( k \) neighbors.
+   - **Classification**: Assign the majority class among the $k$ neighbors.
+   - **Regression**: Predict the average value of the $k$ neighbors.
 
    $$
-   \hat{y} = \operatorname{majority\_vote}(y_1, y_2, ..., y_k)
+   \hat{y} = \text{majorityvote}(y_1, y_2, ..., y_k)
    $$
 
 🔹 **Assumptions**  
@@ -33,8 +33,8 @@
   * *Mitigation*: Standardize features and apply feature selection or dimensionality reduction (e.g., PCA).
 * ❌ **Curse of Dimensionality**: In high dimensions, all points tend to be equidistant, reducing model performance.
   * *Mitigation*: Use dimensionality reduction techniques to reduce feature space.
-* ❌ **Choice of \( k \)**: Too small → overfitting; too large → underfitting.
-  * *Mitigation*: Use cross-validation to tune \( k \) based on validation performance.
+* ❌ **Choice of $k$**: Too small → overfitting; too large → underfitting.
+  * *Mitigation*: Use cross-validation to tune $k$ based on validation performance.
 * ❌ **Memory Usage**: Requires storing the full training set in memory, which is inefficient for large datasets.
 
 

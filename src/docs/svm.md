@@ -8,19 +8,19 @@ Support Vector Machine (SVM) is a **supervised learning algorithm** used for **c
 * These closest data points are called **support vectors**, and they are the only points that influence the final model.
 
 🔹 **Linear SVM**  
-For linearly separable data, SVM finds the hyperplane $ y = w^T x + b $ that **maximizes the margin** between classes:
+For linearly separable data, SVM finds the hyperplane $y = w^T x + b$ that **maximizes the margin** between classes:
 
-- $ w $: weight vector (perpendicular to the hyperplane),
-- $ b $: bias (offset from origin),
-- Margin is $ \frac{2}{\|w\|} $, and the goal is to minimize $ \|w\|^2 $ under correct classification constraints.
+- $w$: weight vector (perpendicular to the hyperplane),
+- $b$: bias (offset from origin),
+- Margin is $\frac{2}{\|w\|}$, and the goal is to minimize $\|w\|^2$ under correct classification constraints.
 
 🔹 **Nonlinear SVM & the Kernel Trick**  
 When the data is not linearly separable, SVM uses the **kernel trick** to implicitly map data to a **higher-dimensional space**, where a linear separator **can** exist.
 
 * Common kernels:
-  - **Linear Kernel**: $ K(x, x') = x^T x' $
-  - **Polynomial Kernel**: $ K(x, x') = (\gamma x^T x' + r)^d $
-  - **RBF (Radial Basis Function)**: $ K(x, x') = \exp(-\gamma \|x - x'\|^2) $
+  - **Linear Kernel**: $K(x, x') = x^T x'$
+  - **Polynomial Kernel**: $K(x, x') = (\gamma x^T x' + r)^d$
+  - **RBF (Radial Basis Function)**: $K(x, x') = \exp(-\gamma \|x - x'\|^2)$
 
 * The kernel trick allows SVM to operate in high-dimensional spaces without the computational cost of explicitly computing the transformation.
 
