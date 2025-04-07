@@ -45,15 +45,6 @@ The following machine learning models have been implemented to predict UFC fight
 - **AdaBoost**: An ensemble technique that combines weak classifiers to create a strong classifier.
 - **Naive Bayes**: A probabilistic classifier based on Bayes' theorem, useful for large feature sets.
 
-## Hyperparameter Tuning
-To optimize model performance, **GridSearchCV** is used for hyperparameter tuning. This method exhaustively searches through a specified parameter grid to find the optimal set of hyperparameters for each model. Some of the hyperparameters tuned include:
-
-- **K-Nearest Neighbors**: `n_neighbors`, `weights`, `metric`
-- **SVM**: `C`, `kernel`, `gamma`
-- **Random Forest**: `n_estimators`, `max_depth`, `min_samples_split`
-- **Neural Networks**: Number of hidden units, learning rate, batch size, epochs
-
-GridSearchCV is implemented with **5-fold cross-validation** to ensure robust performance evaluation across different data splits.
 
 ## Installation & Usage
 To run the model, follow these steps:
@@ -62,16 +53,11 @@ To run the model, follow these steps:
    ```bash
    git clone https://github.com/mfourier/ufc-predictor.git
 
-## Installation & Usage
-To run the model, follow these steps:
+2. **Install the required dependencies**:  
+   ```bash
+   pip install -r requirements.txt
 
-1. Clone the repository:  
-   `git clone https://github.com/mfourier/ufc-predictor.git`
-
-2. Install the required dependencies:  
-   `pip install -r requirements.txt`
-
-3. Run the model or execute the provided Jupyter notebooks to start making predictions.
+3. **Run the model or execute the provided Jupyter notebooks to start making predictions.**
 
 ## Contributors:
 * Maximiliano Lioi, **M.Sc.** in Applied Mathematics @ University of Chile  
