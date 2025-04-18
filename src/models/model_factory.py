@@ -195,7 +195,7 @@ def build_model(model_name, X_train, y_train):
     return grid_search.best_estimator_
 
 # === Model Selection ===
-def get_model(model_name, data_train):
+def model_factory(model_name, data_train):
     """
     Selects and builds a model based on the specified model name and training data.
     
