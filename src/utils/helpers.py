@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+from sklearn.model_selection import train_test_split
 
 def is_pytorch_model(model):
     """
@@ -47,7 +48,7 @@ def get_predictions(model, X_test):
         preds = model.predict(X_test)
         return preds, probs
     
-def _prepare_data(data):
+def prepare_data(data, test_size = 0.25):
     """
     Prepares the test data by separating features and labels.
     
@@ -59,9 +60,11 @@ def _prepare_data(data):
     """
     X = data.drop(columns=['label']).values
     y = data['label'].values
-    return X, y
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size, random_state=42)
 
-def _compute_metrics(y_test, preds, probs, metrics_to_compute):
+    return X_train, X_test, y_train, y_test
+
+def compute_metrics(y_test, preds, probs, metrics_to_compute):
     """
     Computes the specified metrics for the model evaluation.
     
@@ -93,7 +96,7 @@ def _compute_metrics(y_test, preds, probs, metrics_to_compute):
 
     return metrics
 
-def _print_metrics(metrics):
+def print_metrics(metrics):
     """
     Prints the evaluation metrics.
     
@@ -104,7 +107,7 @@ def _print_metrics(metrics):
     for k, v in metrics.items():
         print(f"{k.capitalize()}: {v:.4f}")
 
-def _plot_confusion_matrix(y_test, preds):
+def plot_confusion_matrix(y_test, preds):
     """
     Plots the confusion matrix.
     
@@ -118,7 +121,7 @@ def _plot_confusion_matrix(y_test, preds):
     plt.title("Confusion Matrix")
     plt.show()
 
-def _plot_roc_curve(y_test, probs):
+def plot_roc_curve(y_test, probs):
     """
     Plots the ROC curve.
     

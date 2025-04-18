@@ -12,6 +12,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import f1_score
+from src.utils.helpers import prepare_data
 
 # Logging config
 logging.basicConfig(level=logging.INFO)
@@ -195,13 +196,13 @@ def build_model(model_name, X_train, y_train):
     return grid_search.best_estimator_
 
 # === Model Selection ===
-def model_factory(model_name, data_train):
+def model_factory(model_name, data):
     """
     Selects and builds a model based on the specified model name and training data.
     
     Args:
         model_name (str): The name of the model to be selected.
-        data_train (pandas.DataFrame): The training dataset, which must include a 'label' column.
+        data (pandas.DataFrame): The training dataset, which must include a 'label' column.
     
     Returns:
         object: The trained model.
@@ -209,13 +210,13 @@ def model_factory(model_name, data_train):
     Raises:
         ValueError: If the 'label' column is missing from the training data.
     """
-    if 'label' not in data_train.columns:
+    if 'label' not in data.columns:
         raise ValueError("The dataframe must contain a 'label' column.")
 
-    X_train = data_train.drop(columns=['label']).values
-    y_train = data_train['label'].values
+    X_train, X_test, y_train, y_test = prepare_data(data)
 
     return build_model(model_name, X_train, y_train)
+
 
 
 
