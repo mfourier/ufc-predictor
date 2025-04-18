@@ -1,5 +1,3 @@
-# /utils/metrics.py
-
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,38 +12,46 @@ from sklearn.metrics import (
     ConfusionMatrixDisplay,
     RocCurveDisplay
 )
+from .helpers import *
 
-def evaluate_model(model, X_test, y_test, verbose=True, plot=False):
+def evaluate_model(model, data_test, verbose=True, plot=True, metrics_to_compute=None):
     """
     Evaluates a classification model and optionally prints and plots results.
     Returns a dictionary with all key metrics.
+    
+    Args:
+        model: The trained model to evaluate.
+        data_test: A DataFrame containing the input features and labels for testing.
+        verbose: Whether to print the metrics (default True).
+        plot: Whether to plot confusion matrix and ROC curve (default True).
+        metrics_to_compute: List of specific metrics to compute, if None computes all.
+        
+    Returns:
+        dict: A dictionary containing the calculated metrics.
     """
+    # Prepare the test data
+    X_test, y_test = _prepare_data(data_test)
+
+    # Default to compute all metrics if none are specified
+    if metrics_to_compute is None:
+        metrics_to_compute = ['accuracy', 'precision', 'recall', 'f1_score', 'roc_auc']
+
+    # Get model predictions and probabilities
     preds, probs = get_predictions(model, X_test)
 
-    metrics = {
-        'accuracy': accuracy_score(y_test, preds),
-        'precision': precision_score(y_test, preds, zero_division=0),
-        'recall': recall_score(y_test, preds, zero_division=0),
-        'f1_score': f1_score(y_test, preds, zero_division=0),
-        'roc_auc': roc_auc_score(y_test, probs)
-    }
+    # Compute requested metrics
+    metrics = _compute_metrics(y_test, preds, probs, metrics_to_compute)
 
+    # Optionally print the metrics
     if verbose:
-        print("🔍 Model Evaluation Metrics:")
-        for k, v in metrics.items():
-            print(f"{k.capitalize()}: {v:.4f}")
+        _print_metrics(metrics)
 
+    # Optionally plot confusion matrix and ROC curve
     if plot:
-        cm = confusion_matrix(y_test, preds)
-        disp = ConfusionMatrixDisplay(confusion_matrix=cm)
-        disp.plot(cmap='Blues')
-        plt.title("Confusion Matrix")
-        plt.show()
-
-        RocCurveDisplay.from_predictions(y_test, probs)
-        plt.title("ROC Curve")
-        plt.show()
+        _plot_confusion_matrix(y_test, preds)
+        _plot_roc_curve(y_test, probs)
 
     return metrics
+
 
 
