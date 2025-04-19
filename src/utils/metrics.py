@@ -14,7 +14,7 @@ from sklearn.metrics import (
 )
 from .helpers import *
 
-def evaluate_model(model, data_test, verbose=True, plot=True, metrics_to_compute=None):
+def evaluate_model(model, data, verbose=True, plot=True, metrics_to_compute=None):
     """
     Evaluates a classification model and optionally prints and plots results.
     Returns a dictionary with all key metrics.
@@ -30,11 +30,11 @@ def evaluate_model(model, data_test, verbose=True, plot=True, metrics_to_compute
         dict: A dictionary containing the calculated metrics.
     """
     # Prepare the test data
-    X_test, y_test = prepare_data(data_test)
+    X_train, X_test, y_train, y_test = prepare_data(data)
 
     # Default to compute all metrics if none are specified
     if metrics_to_compute is None:
-        metrics_to_compute = ['accuracy', 'precision', 'recall', 'f1_score', 'roc_auc']
+        metrics_to_compute = ['accuracy', 'precision', 'recall', 'f1_score']
 
     # Get model predictions and probabilities
     preds, probs = get_predictions(model, X_test)
@@ -46,10 +46,9 @@ def evaluate_model(model, data_test, verbose=True, plot=True, metrics_to_compute
     if verbose:
         print_metrics(metrics)
 
-    # Optionally plot confusion matrix and ROC curve
+    # Optionally plot confusion matrix 
     if plot:
         plot_confusion_matrix(y_test, preds)
-        plot_roc_curve(y_test, probs)
 
     return metrics
 

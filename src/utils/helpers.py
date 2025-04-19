@@ -1,18 +1,16 @@
-# import torch
 import numpy as np
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
-
-def is_pytorch_model(model):
-    """
-    Checks if the given model is a PyTorch neural network model.
-
-    Args:
-        model (object): The model to check.
-
-    Returns:
-        bool: True if the model is a PyTorch neural network model, otherwise False.
-    """
-    return isinstance(model, torch.nn.Module)
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    roc_auc_score,
+    confusion_matrix,
+    ConfusionMatrixDisplay,
+    RocCurveDisplay
+)
 
 def get_predictions(model, X_test):
     """
@@ -25,28 +23,18 @@ def get_predictions(model, X_test):
     Returns:
         tuple: A tuple containing the predictions and probabilities.
     """
-    if is_pytorch_model(model):
-        # For PyTorch models, set to evaluation mode and compute predictions
-        model.eval()
-        X_tensor = torch.tensor(X_test, dtype=torch.float32)
-        with torch.no_grad():
-            logits = model(X_tensor).view(-1)
-            probs = torch.sigmoid(logits).numpy()
-            preds = (probs > 0.5).astype(int)
-        return preds, probs
+    # For scikit-learn models, check if the model has predict_proba or decision_function
+    if hasattr(model, "predict_proba"):
+        # For models with a predict_proba method (like RandomForest, AdaBoost, etc.)
+        probs = model.predict_proba(X_test)[:, 1]
     else:
-        # For scikit-learn models, check if the model has predict_proba or decision_function
-        if hasattr(model, "predict_proba"):
-            # For models with a predict_proba method (like RandomForest, AdaBoost, etc.)
-            probs = model.predict_proba(X_test)[:, 1]
-        else:
-            # For models like SVM or Logistic Regression, use decision_function
-            probs = model.decision_function(X_test)
-            # Apply sigmoid for SVMs or linear models to convert to probabilities
-            probs = 1 / (1 + np.exp(-probs))
-        
-        preds = model.predict(X_test)
-        return preds, probs
+        # For models like SVM or Logistic Regression, use decision_function
+        probs = model.decision_function(X_test)
+        # Apply sigmoid for SVMs or linear models to convert to probabilities
+        probs = 1 / (1 + np.exp(-probs))
+    
+    preds = model.predict(X_test)
+    return preds, probs
     
 def prepare_data(data, test_size = 0.2):
     """
@@ -90,10 +78,7 @@ def compute_metrics(y_test, preds, probs, metrics_to_compute):
 
     if 'f1_score' in metrics_to_compute:
         metrics['f1_score'] = f1_score(y_test, preds, zero_division=1)
-
-    if 'roc_auc' in metrics_to_compute:
-        metrics['roc_auc'] = roc_auc_score(y_test, probs[:, 1])  # Use probabilities for class 1
-
+        
     return metrics
 
 def print_metrics(metrics):
@@ -121,14 +106,14 @@ def plot_confusion_matrix(y_test, preds):
     plt.title("Confusion Matrix")
     plt.show()
 
-def plot_roc_curve(y_test, probs):
-    """
-    Plots the ROC curve.
-    
-    Args:
-        y_test: The ground truth labels.
-        probs: The predicted probabilities.
-    """
-    RocCurveDisplay.from_predictions(y_test, probs[:, 1])  # Assuming probs contains probabilities for class 1
-    plt.title("ROC Curve")
-    plt.show()
+# def is_pytorch_model(model):
+#     """
+#     Checks if the given model is a PyTorch neural network model.
+
+#     Args:
+#         model (object): The model to check.
+
+#     Returns:
+#         bool: True if the model is a PyTorch neural network model, otherwise False.
+#     """
+#     return isinstance(model, torch.nn.Module)
