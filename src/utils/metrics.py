@@ -30,7 +30,7 @@ def evaluate_model(model, data_test, verbose=True, plot=True, metrics_to_compute
         dict: A dictionary containing the calculated metrics.
     """
     # Prepare the test data
-    X_test, y_test = _prepare_data(data_test)
+    X_test, y_test = prepare_data(data_test)
 
     # Default to compute all metrics if none are specified
     if metrics_to_compute is None:
@@ -40,16 +40,16 @@ def evaluate_model(model, data_test, verbose=True, plot=True, metrics_to_compute
     preds, probs = get_predictions(model, X_test)
 
     # Compute requested metrics
-    metrics = _compute_metrics(y_test, preds, probs, metrics_to_compute)
+    metrics = compute_metrics(y_test, preds, probs, metrics_to_compute)
 
     # Optionally print the metrics
     if verbose:
-        _print_metrics(metrics)
+        print_metrics(metrics)
 
     # Optionally plot confusion matrix and ROC curve
     if plot:
-        _plot_confusion_matrix(y_test, preds)
-        _plot_roc_curve(y_test, probs)
+        plot_confusion_matrix(y_test, preds)
+        plot_roc_curve(y_test, probs)
 
     return metrics
 
