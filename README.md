@@ -27,7 +27,7 @@ The machine learning models trained on this feature difference aim to predict wh
 
 ### Feature Engineering:
 - **Feature Vector Construction**: The feature vector for each fight is represented as:
-  $$x = \text{features-fighter-red} - \text{features-fighter-blue}$$
+  $$x = \text{features-fighter-blue} - \text{features-fighter-red}$$
   
 This transformation highlights the relative advantages or disadvantages of each fighter in various aspects, such as physical attributes, fighting style, and recent performance trends.
 
