@@ -48,7 +48,7 @@ def get_predictions(model, X_test):
         preds = model.predict(X_test)
         return preds, probs
     
-def prepare_data(data, test_size = 0.25):
+def prepare_data(data, test_size = 0.2):
     """
     Prepares the test data by separating features and labels.
     
@@ -58,9 +58,9 @@ def prepare_data(data, test_size = 0.25):
     Returns:
         tuple: X_test (features), y_test (labels)
     """
-    X = data.drop(columns=['label']).values
-    y = data['label'].values
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size, random_state=42)
+    X = data.drop(columns=['label'])
+    y = data['label']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=42)
 
     return X_train, X_test, y_train, y_test
 
