@@ -12,7 +12,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import f1_score
-from src.utils.helpers import prepare_data
+from utils.helpers import prepare_data
 
 # Logging config
 logging.basicConfig(level=logging.INFO)
@@ -131,18 +131,20 @@ class NeuralNetworkModel(nn.Module):
         return np.stack([1 - probs, probs], axis=1)  
 
 # === GridSearch Model Constructor===
-def build_model(model_name, X_train, y_train):
+def build_model(model_name, X_train, y_train, model_params=None):
     """
     Constructs and trains a model based on the specified model name.
-    
+
     Args:
         model_name (str): The name of the model to build and train (e.g., 'neural_network', 'svm').
         X_train (numpy.ndarray): The training input features.
         y_train (numpy.ndarray): The training target labels.
-    
+        model_params (dict, optional): Dictionary with model instances and hyperparameters for GridSearch.
+            If None, default parameters will be used.
+
     Returns:
         object: The trained model.
-    
+
     Raises:
         ValueError: If the specified model name is not supported.
     """
@@ -154,33 +156,34 @@ def build_model(model_name, X_train, y_train):
         model.fit(X_train, y_train, epochs=100, batch_size=32, lr=0.001)
         return model
 
-    # GridSearch Models Dictionary 
-    model_params = {
-        "svm": (
-            SVC(probability=True),
-            {'C': [0.1, 1, 10], 'kernel': ['linear', 'rbf', 'poly'], 'gamma': ['scale', 'auto']}
-        ),
-        "random_forest": (
-            RandomForestClassifier(),
-            {'n_estimators': [50, 100, 200], 'max_depth': [5, 10, 20]}
-        ),
-        "logistic_regression": (
-            LogisticRegression(),
-            {'C': [0.01, 0.1, 1, 10], 'solver': ['liblinear', 'lbfgs']}
-        ),
-        "knn": (
-            KNeighborsClassifier(),
-            {'n_neighbors': [3, 5, 7, 10], 'weights': ['uniform', 'distance'], 'metric': ['euclidean', 'manhattan']}
-        ),
-        "adaboost": (
-            AdaBoostClassifier(),
-            {'n_estimators': [50, 100, 200], 'learning_rate': [0.01, 0.1, 1.0]}
-        ),
-        "naive_bayes": (
-            GaussianNB(),
-            {'var_smoothing': [1e-9, 1e-8, 1e-7, 1e-6]}
-        )
-    }
+    # Default GridSearch Models Dictionary
+    if model_params is None:
+        model_params = {
+            "svm": (
+                SVC(probability=True),
+                {'C': [0.1, 1, 10], 'kernel': ['linear', 'rbf', 'poly'], 'gamma': ['scale', 'auto']}
+            ),
+            "random_forest": (
+                RandomForestClassifier(),
+                {'n_estimators': [50, 100, 200], 'max_depth': [5, 10, 20]}
+            ),
+            "logistic_regression": (
+                LogisticRegression(),
+                {'C': [0.01, 0.1, 1, 10], 'solver': ['liblinear', 'lbfgs']}
+            ),
+            "knn": (
+                KNeighborsClassifier(),
+                {'n_neighbors': [3, 5, 7, 10], 'weights': ['uniform', 'distance'], 'metric': ['euclidean', 'manhattan']}
+            ),
+            "adaboost": (
+                AdaBoostClassifier(),
+                {'n_estimators': [50, 100, 200], 'learning_rate': [0.01, 0.1, 1.0]}
+            ),
+            "naive_bayes": (
+                GaussianNB(),
+                {'var_smoothing': [1e-9, 1e-8, 1e-7, 1e-6]}
+            )
+        }
 
     if model_name not in model_params:
         raise ValueError(f"Model '{model_name}' is not supported.")
@@ -196,7 +199,7 @@ def build_model(model_name, X_train, y_train):
     return grid_search.best_estimator_
 
 # === Model Selection ===
-def model_factory(model_name, data):
+def model_factory(model_name, data, model_params=None):
     """
     Selects and builds a model based on the specified model name and training data.
     
@@ -215,7 +218,7 @@ def model_factory(model_name, data):
 
     X_train, X_test, y_train, y_test = prepare_data(data)
 
-    return build_model(model_name, X_train, y_train)
+    return build_model(model_name, X_train, y_train, model_params)
 
 
 
