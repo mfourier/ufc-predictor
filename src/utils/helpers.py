@@ -67,17 +67,17 @@ def compute_metrics(y_test, preds, probs, metrics_to_compute):
     """
     metrics = {}
 
-    if 'accuracy' in metrics_to_compute:
-        metrics['accuracy'] = accuracy_score(y_test, preds)
+    if 'Accuracy' in metrics_to_compute:
+        metrics['Accuracy'] = accuracy_score(y_test, preds)
 
-    if 'precision' in metrics_to_compute:
-        metrics['precision'] = precision_score(y_test, preds, zero_division=1)
+    if 'Precision' in metrics_to_compute:
+        metrics['Precision'] = precision_score(y_test, preds, zero_division=1)
 
-    if 'recall' in metrics_to_compute:
-        metrics['recall'] = recall_score(y_test, preds, zero_division=1)
+    if 'Recall' in metrics_to_compute:
+        metrics['Recall'] = recall_score(y_test, preds, zero_division=1)
 
-    if 'f1_score' in metrics_to_compute:
-        metrics['f1_score'] = f1_score(y_test, preds, zero_division=1)
+    if 'F1 Score' in metrics_to_compute:
+        metrics['F1 Score'] = f1_score(y_test, preds, zero_division=1)
         
     return metrics
 
@@ -106,15 +106,3 @@ def plot_confusion_matrix(y_test, preds):
     disp.plot(cmap='Blues')
     plt.title("Confusion Matrix")
     plt.show()
-
-# def is_pytorch_model(model):
-#     """
-#     Checks if the given model is a PyTorch neural network model.
-
-#     Args:
-#         model (object): The model to check.
-
-#     Returns:
-#         bool: True if the model is a PyTorch neural network model, otherwise False.
-#     """
-#     return isinstance(model, torch.nn.Module)

@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import logging
 from sklearn.metrics import (
@@ -29,14 +30,12 @@ def evaluate_model(model, data, verbose=True, plot=True, metrics_to_compute=None
         dict: A dictionary containing the calculated metrics.
     """
 
-    # Print the best parameters if using GridSearch
-    print(f"🚀 Best Parameters Found with GridSearch: {model.best_params_}")
     # Prepare the test data
     X_train, X_test, y_train, y_test = prepare_data(data)
 
     # Default to compute all metrics if none are specified
     if metrics_to_compute is None:
-        metrics_to_compute = ['accuracy', 'precision', 'recall', 'f1_score']
+        metrics_to_compute = ['Accuracy', 'Precision', 'Recall', 'F1 Score']
 
     # Get model predictions and probabilities
     preds, probs = get_predictions(model, X_test)
@@ -46,13 +45,41 @@ def evaluate_model(model, data, verbose=True, plot=True, metrics_to_compute=None
 
     # Optionally print the metrics
     if verbose:
+        # Print the best parameters if using GridSearch
+        print(f"🚀 Best Parameters Found with GridSearch: {model.best_params_}")
         print_metrics(metrics)
 
     # Optionally plot confusion matrix 
     if plot:
         plot_confusion_matrix(y_test, preds)
-
     return metrics
 
+def compare_parameters(models_dict, data):
+    params = []
+    
+    for name, model in models_dict.items():
+        print(f"🚀 Best Parameters Found with GridSearch for {name}: {model.best_params_}")
+        params.append(model.best_params_)
+    return params
+    
+def compare_metrics(models_dict, data, metrics_to_compute=None):
+    """
+    Compares multiple models on the same dataset and returns a DataFrame with metrics.
 
+    Args:
+        models_dict (dict): Dictionary with model_name as key and trained model as value.
+        data (DataFrame): DataFrame with features and 'label' column.
+        metrics_to_compute (list): Optional list of metrics.
+
+    Returns:
+        pd.DataFrame: DataFrame with one row per model and evaluation metrics.
+    """
+    results = []
+    
+    for name, model in models_dict.items():
+        metrics = evaluate_model(model, data, verbose=False, plot=False, metrics_to_compute=metrics_to_compute)
+        metrics['Model'] = name
+        results.append(metrics)
+
+    return pd.DataFrame(results).set_index('Model')
 

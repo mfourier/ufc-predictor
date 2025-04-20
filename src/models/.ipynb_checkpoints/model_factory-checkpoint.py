@@ -7,7 +7,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import GridSearchCV
-from sklearn.metrics import f1_score
 from utils.helpers import prepare_data
 
 
@@ -33,12 +32,6 @@ def build_model(model_name, X_train, y_train, model_params=None):
         ValueError: If the specified model name is not supported.
     """
     model_name = model_name.lower()
-
-    if model_name == "neural_network":
-        input_dim = X_train.shape[1]
-        model = NeuralNetworkModel(input_dim=input_dim, hidden_layer_sizes=(100,))
-        model.fit(X_train, y_train, epochs=100, batch_size=32, lr=0.001)
-        return model
 
     # Default GridSearch Models Dictionary
     default_params = {
