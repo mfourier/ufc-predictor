@@ -1,7 +1,6 @@
-# import torch
 import numpy as np
 import matplotlib.pyplot as plt
-
+import logging
 from sklearn.metrics import (
     accuracy_score,
     precision_score,
@@ -29,6 +28,9 @@ def evaluate_model(model, data, verbose=True, plot=True, metrics_to_compute=None
     Returns:
         dict: A dictionary containing the calculated metrics.
     """
+
+    # Print the best parameters if using GridSearch
+    print(f"🚀 Best Parameters Found with GridSearch: {model.best_params_}")
     # Prepare the test data
     X_train, X_test, y_train, y_test = prepare_data(data)
 

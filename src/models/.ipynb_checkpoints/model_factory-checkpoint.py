@@ -1,6 +1,6 @@
 import numpy as np
 import logging
-
+import time
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.linear_model import LogisticRegression
@@ -10,125 +10,9 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import f1_score
 from utils.helpers import prepare_data
 
-# import torch
-# import torch.nn as nn
-# import torch.optim as optim
 
 # Logging config
 logging.basicConfig(level=logging.INFO)
-
-# === Neural Network ===
-# class NeuralNetworkModel(nn.Module):
-#     """
-#     A simple feed-forward neural network model for binary classification.
-    
-#     Attributes:
-#         network (nn.Sequential): A sequential container for the layers of the network.
-    
-#     Methods:
-#         __init__(input_dim, hidden_layer_sizes, output_dim): Initializes the network with given parameters.
-#         forward(x): Defines the forward pass for the network.
-#         fit(X, y, epochs, batch_size, lr): Trains the model using the given data.
-#         predict(X): Predicts binary outcomes (0 or 1) based on input data.
-#         predict_proba(X): Predicts probabilities of binary outcomes (0 and 1) for the input data.
-#     """
-
-#     def __init__(self, input_dim, hidden_layer_sizes=(100,), output_dim=1):
-#         """
-#         Initializes the neural network with the specified architecture.
-        
-#         Args:
-#             input_dim (int): The number of features in the input data.
-#             hidden_layer_sizes (tuple): The number of units in each hidden layer (default is (100,)).
-#             output_dim (int): The number of output units (default is 1 for binary classification).
-#         """
-#         super().__init__()
-#         layers = []
-#         prev_size = input_dim
-#         for size in hidden_layer_sizes:
-#             layers.append(nn.Linear(prev_size, size))
-#             layers.append(nn.ReLU())
-#             prev_size = size
-#         layers.append(nn.Linear(prev_size, output_dim))
-#         self.network = nn.Sequential(*layers)
-
-#     def forward(self, x):
-#         """
-#         Defines the forward pass for the network.
-        
-#         Args:
-#             x (torch.Tensor): The input tensor to the network.
-        
-#         Returns:
-#             torch.Tensor: The output tensor of the network.
-#         """
-#         return self.network(x)
-
-#     def fit(self, X, y, epochs=100, batch_size=32, lr=0.001):
-#         """
-#         Trains the neural network on the provided training data.
-        
-#         Args:
-#             X (numpy.ndarray): The input features for training.
-#             y (numpy.ndarray): The target labels for training.
-#             epochs (int): The number of training epochs (default is 100).
-#             batch_size (int): The batch size for training (default is 32).
-#             lr (float): The learning rate for training (default is 0.001).
-        
-#         Returns:
-#             self: The trained model.
-#         """
-#         self.train()
-#         X_tensor = torch.tensor(X, dtype=torch.float32)
-#         y_tensor = torch.tensor(y, dtype=torch.float32).view(-1)
-
-#         criterion = nn.BCEWithLogitsLoss()
-#         optimizer = optim.Adam(self.parameters(), lr=lr)
-
-#         dataset = torch.utils.data.TensorDataset(X_tensor, y_tensor)
-#         dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True)
-
-#         for _ in range(epochs):
-#             for batch_X, batch_y in dataloader:
-#                 optimizer.zero_grad()
-#                 outputs = self(batch_X)
-#                 loss = criterion(outputs.view(-1), batch_y)
-#                 loss.backward()
-#                 optimizer.step()
-#         return self
-
-#     def predict(self, X):
-#         """
-#         Predicts binary outcomes (0 or 1) based on input features.
-        
-#         Args:
-#             X (numpy.ndarray): The input features for prediction.
-        
-#         Returns:
-#             numpy.ndarray: The predicted binary outcomes (0 or 1).
-#         """
-#         self.eval()
-#         X_tensor = torch.tensor(X, dtype=torch.float32)
-#         with torch.no_grad():
-#             outputs = self(X_tensor)
-#         return ((outputs.view(-1) > 0).int()).numpy()
-
-#     def predict_proba(self, X):
-#         """
-#         Predicts probabilities for binary outcomes (0 and 1).
-        
-#         Args:
-#             X (numpy.ndarray): The input features for prediction.
-        
-#         Returns:
-#             numpy.ndarray: The predicted probabilities for each class (0 and 1).
-#         """
-#         self.eval()
-#         X_tensor = torch.tensor(X, dtype=torch.float32)
-#         with torch.no_grad():
-#             outputs = self(X_tensor)
-#         probs = torch.sigmoid(outputs.view(-1))
-#         return np.stack([1 - probs, probs], axis=1)  
 
 # === GridSearch Model Constructor===
 def build_model(model_name, X_train, y_train, model_params=None):
@@ -157,46 +41,52 @@ def build_model(model_name, X_train, y_train, model_params=None):
         return model
 
     # Default GridSearch Models Dictionary
-    if model_params is None:
-        model_params = {
+    default_params = {
             "svm": (
                 SVC(probability=True),
                 {'C': [0.1, 1, 10], 'kernel': ['linear', 'rbf', 'poly'], 'gamma': ['scale', 'auto']}
             ),
             "random_forest": (
                 RandomForestClassifier(),
-                {'n_estimators': [50, 100, 200], 'max_depth': [5, 10, 20]}
+                {'n_estimators': [10, 50, 100], 'max_depth': [3, 5, 10]}
             ),
             "logistic_regression": (
                 LogisticRegression(),
-                {'C': [0.01, 0.1, 1, 10], 'solver': ['liblinear', 'lbfgs']}
+                {'C': [0.01, 0.1, 1], 'solver': ['liblinear', 'lbfgs']}
             ),
             "knn": (
                 KNeighborsClassifier(),
-                {'n_neighbors': [3, 5, 7, 10], 'weights': ['uniform', 'distance'], 'metric': ['euclidean', 'manhattan']}
+                {'n_neighbors': [3, 7], 'weights': ['uniform', 'distance'], 'metric': ['euclidean', 'manhattan']}
             ),
             "adaboost": (
                 AdaBoostClassifier(),
-                {'n_estimators': [50, 100, 200], 'learning_rate': [0.01, 0.1, 1.0]}
+                {'n_estimators': [10, 50, 100], 'learning_rate': [0.01, 1.0, 10.0]}
             ),
             "naive_bayes": (
                 GaussianNB(),
-                {'var_smoothing': [1e-9, 1e-8, 1e-7, 1e-6]}
+                {'var_smoothing': [1e-8, 1e-7, 1e-6, 1e-5]}
             )
         }
-
+    
+    if model_params is None:
+        model_params = default_params
+        
     if model_name not in model_params:
         raise ValueError(f"Model '{model_name}' is not supported.")
 
     base_model, param_grid = model_params[model_name]
 
-    grid_search = GridSearchCV(base_model, param_grid, cv=5, scoring='f1', error_score='raise')
+    logging.info(f"[{model_name.upper()}] 📚 UFC GridSearchCV Training 📚...")
+    
+    grid_search = GridSearchCV(base_model, param_grid, cv=5, scoring='accuracy', error_score='raise', verbose = 3)
     grid_search.fit(X_train, y_train)
 
-    logging.info(f"[{model_name.upper()}] Best F1: {grid_search.best_score_:.4f}")
-    logging.info(f"[{model_name.upper()}] Best Params: {grid_search.best_params_}")
+    time.sleep(1)
+    
+    logging.info(f"[{model_name.upper()}] 🔍 Best Score: {grid_search.best_score_:.4f}")
+    logging.info(f"[{model_name.upper()}] 🔍 Best Params: {grid_search.best_params_}")
 
-    return grid_search.best_estimator_
+    return grid_search
 
 # === Model Selection ===
 def model_factory(model_name, data, model_params=None):
@@ -219,7 +109,6 @@ def model_factory(model_name, data, model_params=None):
     X_train, X_test, y_train, y_test = prepare_data(data)
 
     return build_model(model_name, X_train, y_train, model_params)
-
 
 
 

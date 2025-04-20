@@ -100,6 +100,7 @@ def plot_confusion_matrix(y_test, preds):
         y_test: The ground truth labels.
         preds: The model predictions.
     """
+    print('📊 Confusion Matrix:')
     cm = confusion_matrix(y_test, preds)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm)
     disp.plot(cmap='Blues')
