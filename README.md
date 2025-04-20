@@ -6,7 +6,7 @@ The objective of this project is to build a binary classification model to predi
 ## Dataset Description
 The dataset contains detailed fight data where each entry represents a UFC fight, with features representing the differences between the two fighters. For each fight, the feature vector is constructed as the difference in attributes between Fighter Red and Fighter Blue:
 
-$$x = \text{features-fighter-red} - \text{features-fighter-blue}$$
+$$x = \text{features-fighter-blue} - \text{features-fighter-red}$$
 
 ### Key Features:
 - **Fighter Attributes**: Stance, Height, Reach, Weight, Current Win/Loss Streaks, etc.
