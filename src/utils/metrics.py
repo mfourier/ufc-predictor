@@ -14,7 +14,7 @@ from sklearn.metrics import (
 )
 from .helpers import *
 
-def evaluate_model(model, data, verbose=True, plot=True, metrics_to_compute=None):
+def evaluate_model(model, data_test, verbose=True, plot=True, metrics_to_compute=None):
     """
     Evaluates a classification model and optionally prints and plots results.
     Returns a dictionary with all key metrics.
@@ -29,13 +29,16 @@ def evaluate_model(model, data, verbose=True, plot=True, metrics_to_compute=None
     Returns:
         dict: A dictionary containing the calculated metrics.
     """
+    
+    # Prepare the test data (X_train, y_train) to evaluate 'model'
+    X_train = data_train.drop(columns=['label'])
+    y_train = data_train['label']
 
-    # Prepare the test data
-    X_train, X_test, y_train, y_test = prepare_data(data)
-
+    default_metrics_to_compute = ['Accuracy', 'Precision', 'Recall', 'F1 Score']
+    
     # Default to compute all metrics if none are specified
     if metrics_to_compute is None:
-        metrics_to_compute = ['Accuracy', 'Precision', 'Recall', 'F1 Score']
+        metrics_to_compute = default_metrics_to_compute
 
     # Get model predictions and probabilities
     preds, probs = get_predictions(model, X_test)

@@ -1,5 +1,8 @@
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
     accuracy_score,
@@ -12,6 +15,69 @@ from sklearn.metrics import (
     RocCurveDisplay
 )
 
+def split_and_standardize(data: pd.DataFrame, test_size: float = 0.2, random_state: int = 42):
+    """
+    Splits the input DataFrame into training and testing sets, and standardizes
+    the feature columns using statistics computed from the training set.
+    
+    This function assumes the DataFrame contains a 'label' column as the target.
+    The rest of the columns are treated as features. Standardization is performed
+    via sklearn's StandardScaler (zero mean, unit variance).
+    Stratification ensures that the class distribution is preserved in both train and test sets.
+
+    Args:
+        data (pd.DataFrame): Input DataFrame with features and a 'label' column.
+        test_size (float, optional): Proportion of the dataset to include in the test split (default is 0.2).
+        random_state (int, optional): Random seed for reproducibility (default is 42).
+
+    Returns:
+        tuple:
+            - pd.DataFrame: data_train with standardized features and original labels.
+            - pd.DataFrame: data_test with standardized features and original labels.
+
+    Raises:
+        ValueError: If 'label' column is missing, data is empty, or contains null values.
+    """
+    # Check for empty DataFrame
+    if data.empty:
+        raise ValueError("Input DataFrame is empty.")
+    
+    # Check for presence of 'label' column
+    if 'label' not in data.columns:
+        raise ValueError("Input DataFrame must contain a 'label' column.")
+    
+    # Check for missing values in features and label
+    if data.isnull().sum().any():
+        raise ValueError("DataFrame contains missing values. Please clean the data before proceeding.")
+
+    # Separate features and target
+    X = data.drop(columns='label')
+    y = data['label']
+
+    # Split into train and test sets (with stratification)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=test_size, random_state=random_state, stratify=y
+    )
+
+    # Standardize features using training set statistics
+    scaler = StandardScaler()
+    X_train_scaled = pd.DataFrame(
+        scaler.fit_transform(X_train),
+        columns=X_train.columns,
+        index=X_train.index
+    )
+    X_test_scaled = pd.DataFrame(
+        scaler.transform(X_test),
+        columns=X_test.columns,
+        index=X_test.index
+    )
+
+    # Concatenate standardized features with targets
+    data_train = pd.concat([X_train_scaled, y_train], axis=1).reset_index(drop=True)
+    data_test = pd.concat([X_test_scaled, y_test], axis=1).reset_index(drop=True)
+
+    return data_train, data_test
+    
 def get_predictions(model, X_test):
     """
     Returns model predictions and probabilities based on the input model type.
@@ -35,22 +101,6 @@ def get_predictions(model, X_test):
     
     preds = model.predict(X_test)
     return preds, probs
-    
-def prepare_data(data, test_size = 0.2):
-    """
-    Prepares the test data by separating features and labels.
-    
-    Args:
-        data_test: A DataFrame containing the input features and labels for testing.
-        
-    Returns:
-        tuple: X_test (features), y_test (labels)
-    """
-    X = data.drop(columns=['label'])
-    y = data['label']
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=42)
-
-    return X_train, X_test, y_train, y_test
 
 def compute_metrics(y_test, preds, probs, metrics_to_compute):
     """
@@ -92,7 +142,7 @@ def print_metrics(metrics):
     for k, v in metrics.items():
         print(f"{k.capitalize()}: {v:.4f}")
 
-def plot_confusion_matrix(y_test, preds):
+def plot_confusion_matrix(data_test, preds):
     """
     Plots the confusion matrix.
     
@@ -101,6 +151,8 @@ def plot_confusion_matrix(y_test, preds):
         preds: The model predictions.
     """
     print('📊 Confusion Matrix:')
+    y_test = data_test['label']
+    
     cm = confusion_matrix(y_test, preds)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm)
     disp.plot(cmap='Blues')

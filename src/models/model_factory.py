@@ -32,7 +32,7 @@ def build_model(model_name, X_train, y_train, model_params=None):
         ValueError: If the specified model name is not supported.
     """
     model_name = model_name.lower()
-
+    
     # Default GridSearch Models Dictionary
     default_params = {
             "svm": (
@@ -82,13 +82,13 @@ def build_model(model_name, X_train, y_train, model_params=None):
     return grid_search
 
 # === Model Selection ===
-def model_factory(model_name, data, model_params=None):
+def model_factory(model_name, data_train, model_params=None):
     """
     Selects and builds a model based on the specified model name and training data.
     
     Args:
         model_name (str): The name of the model to be selected.
-        data (pandas.DataFrame): The training dataset, which must include a 'label' column.
+        data_train (pandas.DataFrame): The training dataset, which must include a 'label' column.
     
     Returns:
         object: The trained model.
@@ -99,7 +99,9 @@ def model_factory(model_name, data, model_params=None):
     if 'label' not in data.columns:
         raise ValueError("The dataframe must contain a 'label' column.")
 
-    X_train, X_test, y_train, y_test = prepare_data(data)
+    # Prepare the pair (X_train, y_train) to train the model 'model_name'
+    X_train = data_train.drop(columns=['label'])
+    y_train = data_train['label']
 
     return build_model(model_name, X_train, y_train, model_params)
 
