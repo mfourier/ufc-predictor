@@ -17,7 +17,7 @@ The dataset contains detailed information for each UFC fight. Each sample repres
 - **Recent performance indicators** (e.g., win streaks, ring rust).
 
 While numerical features are often expressed as fighter-to-fighter differences:
-$$x = features_blue - features_red$$
+$$x = fighter_{blue} - fighter_{red}$$
 
 ### 🧠 Key Features
 
