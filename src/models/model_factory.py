@@ -69,7 +69,7 @@ def build_model(model_name, X_train, y_train, model_params=None):
 
     base_model, param_grid = model_params[model_name]
 
-    print_header(f"[{model_name.upper()}] 📚 UFC GridSearchCV Training 📚")
+    print_box(f"[{model_name.upper()}] 📚 UFC GridSearchCV Training 📚")
     logging.info(f"[{model_name.upper()}] 🤖 Training...")
     
     grid_search = GridSearchCV(base_model, param_grid, cv=5, scoring='accuracy', error_score='raise', verbose = 3)
@@ -77,11 +77,10 @@ def build_model(model_name, X_train, y_train, model_params=None):
 
     time.sleep(1)
     
-    msg = (
+    logging.info(
     f"[{model_name.upper()}] 🔍 Best Score: {grid_search.best_score_:.4f}\n"
     f"[{model_name.upper()}] 🔍 Best Params: {grid_search.best_params_}"
     )
-    print_box(msg)
 
     return grid_search
 
@@ -100,7 +99,7 @@ def model_factory(model_name, data_train, model_params=None):
     Raises:
         ValueError: If the 'label' column is missing from the training data.
     """
-    if 'label' not in data.columns:
+    if 'label' not in data_train.columns:
         raise ValueError("The dataframe must contain a 'label' column.")
 
     # Prepare the pair (X_train, y_train) to train the model 'model_name'

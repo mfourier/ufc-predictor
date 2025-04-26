@@ -34,8 +34,8 @@ def evaluate_model(model, data_test, verbose=True, plot=True, metrics_to_compute
     print_box(f"📊 Starting Evaluation for: {model_name} ✅")
     
     # Prepare the test data (X_train, y_train) to evaluate 'model'
-    X_train = data_train.drop(columns=['label'])
-    y_train = data_train['label']
+    X_test = data_test.drop(columns=['label'])
+    y_test = data_test['label']
 
     default_metrics_to_compute = ['Accuracy', 'Precision', 'Recall', 'F1 Score']
     

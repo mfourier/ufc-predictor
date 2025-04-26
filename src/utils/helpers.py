@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import re
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import (
@@ -134,7 +135,7 @@ def print_metrics(metrics):
     # Usar print_box para mostrar todo dentro de una caja
     print_box(metrics_str)
 
-def plot_confusion_matrix(data_test, preds):
+def plot_confusion_matrix(y_test, preds):
     """
     Plots the confusion matrix.
     
@@ -143,7 +144,6 @@ def plot_confusion_matrix(data_test, preds):
         preds: The model predictions.
     """
     print_header('📊 Confusion Matrix:📊')
-    y_test = data_test['label']
     
     cm = confusion_matrix(y_test, preds)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm)
