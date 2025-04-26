@@ -66,23 +66,23 @@ The following machine learning models have been implemented to predict UFC fight
 ```bash
 ufc-predictor/
 ├── data/
-│   ├── raw/                    # Original fight data
-│   └── processed/              # Cleaned & transformed datasets
+│   ├── raw/                       # Original fight data
+│   └── processed/                 # Cleaned & transformed datasets
 ├── notebooks/
-│   ├── etl.ipynb               # Data extraction and cleaning
-│   ├── feature_engineering.ipynb
-│   ├── eda.ipynb               # Exploratory Data Analysis
-│   ├── training.ipynb          # Model training
-│   └── model_experiments.ipynb
+│   ├── etl.ipynb                  # Data extraction and cleaning
+│   ├── feature_engineering.ipynb  # Feature Engineering
+│   ├── eda.ipynb                  # Exploratory Data Analysis
+│   ├── training.ipynb             # Model training
+│   └── model_experiments.ipynb    # Models metrics comparisons, results analysis and experimentation
 ├── src/
 │   ├── models/
-│   │   ├── model_factory.py    # Central model selection and training
-│   │   └── nn_model.py         # PyTorch neural network implementation
+│   │   ├── model_factory.py       # Central model selection and training
+│   │   └── nn_model.py            # PyTorch neural network implementation
 │   ├── utils/
-│   │   ├── helpers.py          # Data preparation and utility functions
-│   │   ├── metrics.py          # Evaluation and plotting metrics
-│   │   └── io_models.py        # Saving/loading models to/from disk
-├── docs/                       # Model documentation in Markdown format
+│   │   ├── helpers.py             # Data preparation and utility functions
+│   │   ├── metrics.py             # Evaluation and plotting metrics functions
+│   │   └── io_models.py           # Saving/loading models to/from disk
+├── docs/                          # Model documentation in Markdown format
 └── requirements.txt
 ```
 
