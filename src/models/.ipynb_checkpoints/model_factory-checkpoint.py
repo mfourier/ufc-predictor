@@ -7,7 +7,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import GridSearchCV
-from utils.helpers import prepare_data
+from utils.helpers import *
 
 
 # Logging config
@@ -69,15 +69,19 @@ def build_model(model_name, X_train, y_train, model_params=None):
 
     base_model, param_grid = model_params[model_name]
 
-    logging.info(f"[{model_name.upper()}] 📚 UFC GridSearchCV Training 📚...")
+    print_header(f"[{model_name.upper()}] 📚 UFC GridSearchCV Training 📚")
+    logging.info(f"[{model_name.upper()}] 🤖 Training...")
     
     grid_search = GridSearchCV(base_model, param_grid, cv=5, scoring='accuracy', error_score='raise', verbose = 3)
     grid_search.fit(X_train, y_train)
 
     time.sleep(1)
     
-    logging.info(f"[{model_name.upper()}] 🔍 Best Score: {grid_search.best_score_:.4f}")
-    logging.info(f"[{model_name.upper()}] 🔍 Best Params: {grid_search.best_params_}")
+    msg = (
+    f"[{model_name.upper()}] 🔍 Best Score: {grid_search.best_score_:.4f}\n"
+    f"[{model_name.upper()}] 🔍 Best Params: {grid_search.best_params_}"
+    )
+    print_box(msg)
 
     return grid_search
 

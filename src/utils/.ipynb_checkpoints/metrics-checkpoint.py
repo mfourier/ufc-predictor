@@ -30,6 +30,9 @@ def evaluate_model(model, data_test, verbose=True, plot=True, metrics_to_compute
         dict: A dictionary containing the calculated metrics.
     """
     
+    model_name = get_pretty_model_name(model)
+    print_box(f"📊 Starting Evaluation for: {model_name} ✅")
+    
     # Prepare the test data (X_train, y_train) to evaluate 'model'
     X_train = data_train.drop(columns=['label'])
     y_train = data_train['label']
@@ -49,7 +52,7 @@ def evaluate_model(model, data_test, verbose=True, plot=True, metrics_to_compute
     # Optionally print the metrics
     if verbose:
         # Print the best parameters if using GridSearch
-        print(f"🚀 Best Parameters Found with GridSearch: {model.best_params_}")
+        print_box(f"🚀 Best Parameters Found with GridSearch: {model.best_params_}")
         print_metrics(metrics)
 
     # Optionally plot confusion matrix 
@@ -61,7 +64,7 @@ def compare_parameters(models_dict, data):
     params = []
     
     for name, model in models_dict.items():
-        print(f"🚀 Best Parameters Found with GridSearch for {name}: {model.best_params_}")
+        print_box(f"🚀 Best Parameters Found with GridSearch for {name}: {model.best_params_}")
         params.append(model.best_params_)
     return params
     
