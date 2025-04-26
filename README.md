@@ -105,6 +105,6 @@ Start with notebooks/etl.ipynb and proceed through the pipeline.
 * Rocío Yañez, **M.Sc.** in Applied Mathematics @ University of Chile, Department of Mathematical Engineering
 
 ## 🙏 Acknowledgements
-We gratefully acknowledge the work of shortlikeafox, whose **shortlikeafox**, whose repository can be found at https://github.com/shortlikeafox/ultimate_ufc_dataset, whose Ultimate UFC Dataset was essential for building and evaluating our models. This dataset contains valuable historical data on UFC fights, which is crucial for training and evaluating the predictive models in this project.
+We gratefully acknowledge the work of **shortlikeafox**, whose repository can be found at https://github.com/shortlikeafox/ultimate_ufc_dataset, this Dataset was essential for building and evaluating our models. This dataset contains valuable historical data on UFC fights, which is crucial for training and evaluating the predictive models in this project.
 
 
