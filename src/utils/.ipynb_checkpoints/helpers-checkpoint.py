@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import re
+from models.config import *
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import (
@@ -127,14 +127,20 @@ def print_metrics(metrics):
     Args:
         metrics: Dictionary containing the calculated metrics.
     """
-    # Construir el mensaje con las métricas
-    metrics_str = "🔍 Model Evaluation Metrics:\n"
+    metrics_str = "🔍 Model Evaluation Metrics 🔍:\n"
     for k, v in metrics.items():
         metrics_str += f"{k.capitalize()}: {v:.4f}\n"
+        
+    print(metrics_str)
 
-    # Usar print_box para mostrar todo dentro de una caja
-    print_box(metrics_str)
-
+def compare_parameters(models_dict, data):
+    params = []
+    
+    for name, model in models_dict.items():
+        print_header(f"Best Parameters Found with GridSearch for {name}: {model.best_params_}")
+        params.append(model.best_params_)
+    return params
+    
 def plot_confusion_matrix(y_test, preds):
     """
     Plots the confusion matrix.
@@ -143,7 +149,7 @@ def plot_confusion_matrix(y_test, preds):
         y_test: The ground truth labels.
         preds: The model predictions.
     """
-    print_header('📊 Confusion Matrix:📊')
+    print_header('Confusion Matrix', color = 'bright_cyan')
     
     cm = confusion_matrix(y_test, preds)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm)
@@ -151,89 +157,51 @@ def plot_confusion_matrix(y_test, preds):
     plt.title("Confusion Matrix")
     plt.show()
 
-def print_header(text: str) -> None:
+def print_header(text: str, color: str = "default") -> None:
     """
-    Prints a beautified string enclosed in an ASCII-style box.
+    Prints a beautified and centered string inside a stylish ASCII box, with optional color.
 
     Example:
-    >>> print_header("Training UFC Fight Predictor Model")
-    ╔════════════════════════════════════════════╗
-    ║  Training UFC Fight Predictor Model        ║
-    ╚════════════════════════════════════════════╝
+    >>> print_header("Training UFC Fight Predictor Model", color="cyan")
     """
-    padded_text = f"  {text}  "
-    box_width = len(padded_text)
+    color_code = colors.get(color.lower(), colors["default"])
 
-    top_border = f"╔{'═' * box_width}╗"
-    middle = f"║{padded_text}║"
-    bottom_border = f"╚{'═' * box_width}╝"
+    padding_side = 2  # Spaces at left and right
+    padding_top_bottom = 0  # Blank lines above and below text inside the box
 
-    print(top_border)
-    print(middle)
-    print(bottom_border)
+    text_line = f"{text.center(len(text) + padding_side * 2)}"
+    width = len(text_line)
 
-def print_box(text: str) -> None:
-    """
-    Prints text inside a simple ASCII box.
-    
-    Example:
-    >>> print_box("Some info goes here")
-    +-----------------------------+
-    |     Some info goes here     |
-    +-----------------------------+
-    """
-    box_width = len(text) + 6
-    print(f"+{'-' * (box_width - 2)}+")
-    print(f"|  {text}  |")
-    print(f"+{'-' * (box_width - 2)}+")
+    top_border = f"╔{'═' * width}╗"
+    empty_line = f"║{' ' * width}║"
+    middle_line = f"║{text_line}║"
+    bottom_border = f"╚{'═' * width}╝"
 
-# Function to print info message in blue
-def print_info(text: str) -> None:
-    """
-    Prints text in blue for informational messages.
-    """
-    print(f"\033[94m{text}\033[0m")
+    lines = [top_border]
+    lines.extend([empty_line] * padding_top_bottom)
+    lines.append(middle_line)
+    lines.extend([empty_line] * padding_top_bottom)
+    lines.append(bottom_border)
 
-# Function to print error message in red
-def print_error(text: str) -> None:
-    """
-    Prints text in red for error messages.
-    """
-    print(f"\033[91m{text}\033[0m")
-    
+    # Print with color
+    print(color_code + "\n".join(lines) + colors["default"])
+
 def get_pretty_model_name(model) -> str:
     """
-    Args:
-    model (object): A scikit-learn model object (e.g., RandomForestClassifier, SVC).
+    Returns the pretty name of the model type.
+    If the model is wrapped in a GridSearchCV, it retrieves the base model.
 
-    Returns a prettified name for a scikit-learn model object.
-    For example:
-        RandomForestClassifier -> "Random Forest Classifier"
-        LogisticRegression     -> "Logistic Regression"
-        SVC                    -> "Support Vector Classifier"
+    Example:
+    >>> get_pretty_model_name(knn_model)
+    'K-Nearest Neighbors'
     """
-    raw_name = type(model).__name__
+    
+    base_model = model.best_estimator_
+    model_name = type(base_model).__name__
 
-    # Manual mapping for known abbreviations
-    replacements = {
-        "SVC": "Support Vector Classifier",
-        "SVR": "Support Vector Regressor",
-        "KNeighborsClassifier": "K-Nearest Neighbors",
-        "KMeans": "K-Means",
-        "MLPClassifier": "Neural Network (MLP)",
-        "GaussianNB": "Gaussian Naive Bayes",
-        "MultinomialNB": "Multinomial Naive Bayes",
-        "DecisionTreeClassifier": "Decision Tree",
-        "RandomForestClassifier": "Random Forest",
-        "GradientBoostingClassifier": "Gradient Boosting",
-        "AdaBoostClassifier": "AdaBoost",
-        "BaggingClassifier": "Bagging",
-        "LogisticRegression": "Logistic Regression"
-    }
+    # Si el modelo no tiene un nombre bonito mapeado, lanzamos un error
+    if model_name not in pretty_names:
+        raise ValueError(f"Model '{model_name}' does not have a predefined pretty name in the mapping.")
 
-    if raw_name in replacements:
-        return replacements[raw_name]
-
-    # Default: convert CamelCase to spaced words
-    pretty = re.sub(r'(?<!^)(?=[A-Z])', ' ', raw_name)
-    return pretty.strip()
+    # Devuelve el nombre bonito
+    return pretty_names[model_name]

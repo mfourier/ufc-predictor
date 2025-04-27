@@ -14,6 +14,9 @@ from sklearn.metrics import (
 )
 from .helpers import *
 
+# Logging config
+logging.basicConfig(level=logging.INFO)
+
 def evaluate_model(model, data_test, verbose=True, plot=True, metrics_to_compute=None):
     """
     Evaluates a classification model and optionally prints and plots results.
@@ -31,7 +34,7 @@ def evaluate_model(model, data_test, verbose=True, plot=True, metrics_to_compute
     """
     
     model_name = get_pretty_model_name(model)
-    print_box(f"📊 Starting Evaluation for: {model_name} ✅")
+    print_header(f"Starting Evaluation for: [{model_name}]", color = 'bright_green')
     
     # Prepare the test data (X_train, y_train) to evaluate 'model'
     X_test = data_test.drop(columns=['label'])
@@ -52,7 +55,7 @@ def evaluate_model(model, data_test, verbose=True, plot=True, metrics_to_compute
     # Optionally print the metrics
     if verbose:
         # Print the best parameters if using GridSearch
-        print_box(f"🚀 Best Parameters Found with GridSearch: {model.best_params_}")
+        print_header(f"Best Parameters Found with GridSearch: {model.best_params_}", color = 'bright_magenta')
         print_metrics(metrics)
 
     # Optionally plot confusion matrix 
@@ -60,13 +63,7 @@ def evaluate_model(model, data_test, verbose=True, plot=True, metrics_to_compute
         plot_confusion_matrix(y_test, preds)
     return metrics
 
-def compare_parameters(models_dict, data):
-    params = []
-    
-    for name, model in models_dict.items():
-        print_box(f"🚀 Best Parameters Found with GridSearch for {name}: {model.best_params_}")
-        params.append(model.best_params_)
-    return params
+
     
 def compare_metrics(models_dict, data, metrics_to_compute=None):
     """
