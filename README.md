@@ -1,7 +1,8 @@
 # 🥋 UFC Fight Predictor Model
 
+
 <p align="center">
-  <img src="img/ufc_logo.png" width="400">
+  <img src="img/ufc_logo.png" width="500">
 </p>
 
 ## 🎯 Objective
