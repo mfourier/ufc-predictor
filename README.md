@@ -77,13 +77,13 @@ ufc-predictor/
 ├── src/
 │   ├── models/
 │   │   ├── model_factory.py       # Central model selection and training
-│   │   └── nn_model.py            # PyTorch neural network implementation
+│   │   ├── nn_model.py            # PyTorch neural network implementation
+│   │   └── config.py              # Model-related configuration settings
 │   ├── utils/
 │   │   ├── helpers.py             # Data preparation and utility functions
 │   │   ├── metrics.py             # Evaluation and plotting metrics functions
 │   │   └── io_models.py           # Saving/loading models to/from disk
 ├── docs/                          # Model documentation in Markdown format
-└── requirements.txt
 ```
 
 ## 🚀 Installation & Usage
