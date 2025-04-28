@@ -2,7 +2,7 @@
 
 
 <p align="center">
-  <img src="img/ufc_logo.png" width="500">
+  <img src="img/ufc_logo.png" width="400">
 </p>
 
 ## 🎯 Objective
