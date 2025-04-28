@@ -11,7 +11,7 @@ default_params = {
         SVC(probability=True),
         {'C': [0.1, 1, 10], 'kernel': ['linear', 'rbf', 'poly'], 'gamma': ['scale', 'auto']}
     ),
-    "Random Forest Classifier": (
+    "Random Forest": (
         RandomForestClassifier(),
         {'n_estimators': [10, 50, 100], 'max_depth': [3, 5, 10]}
     ),
@@ -23,7 +23,7 @@ default_params = {
         KNeighborsClassifier(),
         {'n_neighbors': [3, 7], 'weights': ['uniform', 'distance'], 'metric': ['euclidean', 'manhattan']}
     ),
-    "AdaBoost Classifier": (
+    "AdaBoost": (
         AdaBoostClassifier(),
         {'n_estimators': [10, 50, 100], 'learning_rate': [0.01, 1.0, 10.0]}
     ),
@@ -47,10 +47,10 @@ default_params = {
 
 pretty_names = {
         "LogisticRegression": "Logistic Regression",
-        "RandomForestClassifier": "Random Forest Classifier",
+        "RandomForestClassifier": "Random Forest",
         "SVC": "Support Vector Machine",
         "KNeighborsClassifier": "K-Nearest Neighbors",
-        "AdaBoostClassifier": "AdaBoost Classifier",
+        "AdaBoostClassifier": "AdaBoost",
         "GaussianNB": "Naive Bayes",
         "ExtraTreesClassifier": "Extra Trees",
         "GradientBoostingClassifier": "Gradient Boosting",

@@ -150,14 +150,13 @@ def plot_confusion_matrix(y_test, preds):
         preds: The model predictions.
     """
     print_header('Confusion Matrix', color = 'bright_cyan')
-    
     cm = confusion_matrix(y_test, preds)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm)
     disp.plot(cmap='Blues')
     plt.title("Confusion Matrix")
     plt.show()
 
-def print_header(text: str, color: str = "default") -> None:
+def print_header(text: str, color: str = "default", padding_side = 2, padding_top_bottom = 0) -> None:
     """
     Prints a beautified and centered string inside a stylish ASCII box, with optional color.
 
@@ -165,10 +164,6 @@ def print_header(text: str, color: str = "default") -> None:
     >>> print_header("Training UFC Fight Predictor Model", color="cyan")
     """
     color_code = colors.get(color.lower(), colors["default"])
-
-    padding_side = 2  # Spaces at left and right
-    padding_top_bottom = 0  # Blank lines above and below text inside the box
-
     text_line = f"{text.center(len(text) + padding_side * 2)}"
     width = len(text_line)
 

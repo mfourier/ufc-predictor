@@ -1,5 +1,9 @@
 # 🥋 UFC Fight Predictor Model
 
+<p align="center">
+  <img src="img/ufc_logo.png" width="400">
+</p>
+
 ## 🎯 Objective
 
 This project aims to build a **binary classification model** that predicts the winner of a UFC fight. The model evaluates differences in physical attributes, fighting styles, and recent performances to estimate whether **Fighter Red** or **Fighter Blue** is more likely to win.
