@@ -88,6 +88,8 @@ ufc-predictor/
 │   │   ├── metrics.py             # Evaluation and plotting metrics functions
 │   │   └── io_models.py           # Saving/loading models to/from disk
 ├── docs/                          # Model documentation in Markdown format
+├── img/                           # Directory for images and visualizations
+
 ```
 
 ## 🚀 Installation & Usage
