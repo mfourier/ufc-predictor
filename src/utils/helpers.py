@@ -63,7 +63,7 @@ def split_and_standardize(data: pd.DataFrame, categorical_columns: list, test_si
     data_train = pd.concat([X_train_scaled, y_train], axis=1).reset_index(drop=True)
     data_test = pd.concat([X_test_scaled, y_test], axis=1).reset_index(drop=True)
 
-    print_box('Numerical Data has been standardized and the dataset has been split')
+    print_header('Numerical Data has been standardized and the dataset has been split', color = 'bright_green')
     return data_train, data_test
 
     
