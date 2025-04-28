@@ -57,6 +57,18 @@ pretty_names = {
         "QuadraticDiscriminantAnalysis": "Quadratic Discriminant Analysis"
     }
 
+pretty_model_names = {
+        "lr_best": "Logistic Regression",
+        "rf_best": "Random Forest",
+        "svm_best": "Support Vector Machine",
+        "knn_best": "K-Nearest Neighbors",
+        "ab_best": "AdaBoost",
+        "nb_best": "Naive Bayes",
+        "et_best": "Extra Trees",
+        "gb_best": "Gradient Boosting",
+        "qda_best": "Quadratic Discriminant Analysis"
+    }
+
 # ANSI color codes
 # Extended ANSI color codes
 colors = {
@@ -81,13 +93,3 @@ colors = {
     "underline": "\033[4m",
     "reverse": "\033[7m"
 }
-
-def get_supported_models():
-    """
-    Returns a sorted list of all supported model names.
-
-    Returns:
-        list: List of model names (str) available in default_params.
-    """
-    return sorted(default_params.keys())
-

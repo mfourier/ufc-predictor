@@ -91,71 +91,20 @@ def get_predictions(model, X_test):
     preds = model.predict(X_test)
     return preds, probs
 
-def compute_metrics(y_test, preds, probs, metrics_to_compute):
-    """
-    Computes the specified metrics for the model evaluation.
+def parameters_dict(models_dict):
+    # Diccionario para almacenar los modelos y sus mejores parámetros
+    best_params = {}
     
-    Args:
-        y_test: The ground truth labels.
-        preds: The model predictions.
-        probs: The predicted probabilities.
-        metrics_to_compute: List of metrics to compute.
-        
-    Returns:
-        dict: Calculated metrics.
-    """
-    metrics = {}
-
-    if 'Accuracy' in metrics_to_compute:
-        metrics['Accuracy'] = accuracy_score(y_test, preds)
-
-    if 'Precision' in metrics_to_compute:
-        metrics['Precision'] = precision_score(y_test, preds, zero_division=1)
-
-    if 'Recall' in metrics_to_compute:
-        metrics['Recall'] = recall_score(y_test, preds, zero_division=1)
-
-    if 'F1 Score' in metrics_to_compute:
-        metrics['F1 Score'] = f1_score(y_test, preds, zero_division=1)
-        
-    return metrics
-
-def print_metrics(metrics):
-    """
-    Prints the evaluation metrics inside a decorated box.
+    # Iterar sobre los modelos en models_dict
+    for model_name, model in models_dict.items():
+        # Verificar si el modelo tiene un atributo 'best_params_'
+        if hasattr(model, 'best_params_'):
+            best_params[model_name] = model.best_params_
+        else:
+            # Si no tiene 'best_params_', se coloca un mensaje de error
+            best_params[model_name] = 'No GridSearchCV parameters'
+    return best_params
     
-    Args:
-        metrics: Dictionary containing the calculated metrics.
-    """
-    metrics_str = "🔍 Model Evaluation Metrics 🔍:\n"
-    for k, v in metrics.items():
-        metrics_str += f"{k.capitalize()}: {v:.4f}\n"
-        
-    print(metrics_str)
-
-def compare_parameters(models_dict, data):
-    params = []
-    
-    for name, model in models_dict.items():
-        print_header(f"Best Parameters Found with GridSearch for {name}: {model.best_params_}")
-        params.append(model.best_params_)
-    return params
-    
-def plot_confusion_matrix(y_test, preds):
-    """
-    Plots the confusion matrix.
-    
-    Args:
-        y_test: The ground truth labels.
-        preds: The model predictions.
-    """
-    print_header('Confusion Matrix', color = 'bright_cyan')
-    cm = confusion_matrix(y_test, preds)
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm)
-    disp.plot(cmap='Blues')
-    plt.title("Confusion Matrix")
-    plt.show()
-
 def print_header(text: str, color: str = "default", padding_side = 2, padding_top_bottom = 0) -> None:
     """
     Prints a beautified and centered string inside a stylish ASCII box, with optional color.
@@ -200,3 +149,12 @@ def get_pretty_model_name(model) -> str:
 
     # Devuelve el nombre bonito
     return pretty_names[model_name]
+
+def get_supported_models():
+    """
+    Returns a sorted list of all supported model names.
+
+    Returns:
+        list: List of model names (str) available in default_params.
+    """
+    return sorted(default_params.keys())

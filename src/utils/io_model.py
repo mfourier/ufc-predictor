@@ -1,5 +1,7 @@
 import os
 import pickle
+from models.config import *
+from .helpers import *
 
 def get_models_dir():
     """
@@ -28,7 +30,7 @@ def save_model(model, name, overwrite=True):
 
     with open(path, 'wb') as f:
         pickle.dump(model, f)
-    print(f"✅ Model saved to: {path}")
+    print(f"✅ Model {get_pretty_model_name(model)} saved to: {path}")
 
 
 def load_model(name, verbose=True):
@@ -51,6 +53,6 @@ def load_model(name, verbose=True):
         model = pickle.load(f)
 
     if verbose:
-        print(f"📦 Model loaded from: {path}")
+        print(f"📦 Model {pretty_model_names[name]} loaded from: {path}")
 
     return model
