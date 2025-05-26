@@ -58,9 +58,6 @@ The modeling pipeline follows these core steps:
 ## Models Implemented
 The following machine learning models have been implemented to predict UFC fight outcomes:
 
-## Models Implemented
-The following machine learning models have been implemented to predict UFC fight outcomes:
-
 - ✅**K-Nearest Neighbors (KNN)**: A non-parametric method used for classification based on the proximity of data points.
 - ✅**Support Vector Machine (SVM)**: A supervised learning model that works well in high-dimensional spaces and is effective for binary classification.
 - ✅**Logistic Regression**: A linear model used for binary classification, commonly used for probabilistic predictions.
