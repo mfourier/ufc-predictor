@@ -14,6 +14,8 @@ from sklearn.metrics import (
     ConfusionMatrixDisplay,
     RocCurveDisplay
 )
+from datetime import datetime
+import os
 
 def split_and_standardize(data: pd.DataFrame, categorical_columns: list, test_size: float = 0.2, random_state: int = 42):
     """
@@ -158,3 +160,31 @@ def get_supported_models():
         list: List of model names (str) available in default_params.
     """
     return sorted(default_params.keys())
+
+def log_training_result(model_name, best_params, metrics, duration, log_path='../data/results/training_log.csv'):
+    """
+    Logs training information into a cumulative CSV file.
+
+    Parameters:
+        model_name (str): Name of the model.
+        best_params (dict): Parameters found by GridSearchCV.
+        metrics (dict): Evaluation metrics such as accuracy, f1, etc.
+        duration (float): Training time in seconds.
+        log_path (str): Path to the CSV file where the log will be saved.
+    """
+    log_entry = {
+        'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'model': model_name,
+        'duration_sec': round(duration, 2),
+        **metrics,
+        **{f'param_{k}': v for k, v in best_params.items()}
+    }
+
+    if os.path.exists(log_path):
+        df = pd.read_csv(log_path)
+        df = pd.concat([df, pd.DataFrame([log_entry])], ignore_index=True)
+    else:
+        df = pd.DataFrame([log_entry])
+
+    df.to_csv(log_path, index=False)
+    print(f'✅ Training logged to {log_path}')

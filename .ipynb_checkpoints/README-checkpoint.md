@@ -58,6 +58,9 @@ The modeling pipeline follows these core steps:
 ## Models Implemented
 The following machine learning models have been implemented to predict UFC fight outcomes:
 
+## Models Implemented
+The following machine learning models have been implemented to predict UFC fight outcomes:
+
 - ✅**K-Nearest Neighbors (KNN)**: A non-parametric method used for classification based on the proximity of data points.
 - ✅**Support Vector Machine (SVM)**: A supervised learning model that works well in high-dimensional spaces and is effective for binary classification.
 - ✅**Logistic Regression**: A linear model used for binary classification, commonly used for probabilistic predictions.
@@ -65,6 +68,10 @@ The following machine learning models have been implemented to predict UFC fight
 - ✅**Neural Networks (using PyTorch)**: A deep learning approach that can learn complex patterns in large datasets.
 - ✅**AdaBoost**: An ensemble technique that combines weak classifiers to create a strong classifier.
 - ✅**Naive Bayes**: A probabilistic classifier based on Bayes' theorem, useful for large feature sets.
+- ✅**Quadratic Discriminant Analysis (QDA)**: A generative classifier that assumes a Gaussian distribution of features for each class and is suitable for problems where the decision boundaries are quadratic.
+- ✅**Extra Trees**: An ensemble method based on random forests, using extra randomness in the tree-building process to improve performance.
+- ✅**Gradient Boosting**: A boosting technique that builds an additive model by sequentially fitting new models to correct the residuals of the previous ones, enhancing predictive accuracy.
+
 
 ## 🧪 Project Structure
 ```bash
@@ -73,11 +80,11 @@ ufc-predictor/
 │   ├── raw/                       # Original fight data
 │   └── processed/                 # Cleaned & transformed datasets
 ├── notebooks/
-│   ├── etl.ipynb                  # Data extraction and cleaning
-│   ├── feature_engineering.ipynb  # Feature Engineering
-│   ├── eda.ipynb                  # Exploratory Data Analysis
-│   ├── training.ipynb             # Model training
-│   └── model_experiments.ipynb    # Models metrics comparisons, results analysis and experimentation
+│   ├── 01-etl.ipynb                  # Data extraction and cleaning
+│   ├── 02-eda.ipynb                  # Exploratory Data Analysis
+│   ├── 03-feature_engineering.ipynb  # Feature Engineering
+│   ├── 04-training.ipynb             # Model training
+│   └── 05-model_experiments.ipynb    # Models metrics comparisons, results analysis and experimentation
 ├── src/
 │   ├── models/
 │   │   ├── model_factory.py       # Central model selection and training

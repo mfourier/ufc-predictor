@@ -57,7 +57,7 @@ pretty_names = {
         "QuadraticDiscriminantAnalysis": "Quadratic Discriminant Analysis"
     }
 
-pretty_model_names = {
+pretty_model_name = {
         "lr_best": "Logistic Regression",
         "rf_best": "Random Forest",
         "svm_best": "Support Vector Machine",
@@ -67,6 +67,18 @@ pretty_model_names = {
         "et_best": "Extra Trees",
         "gb_best": "Gradient Boosting",
         "qda_best": "Quadratic Discriminant Analysis"
+    }
+
+file_model_name = {
+        "Logistic Regression": "lr_best",
+        "Random Forest": "rf_best" ,
+        "Support Vector Machine": "svm_best",
+        "K-Nearest Neighbors": "knn_best",
+        "AdaBoost": "ab_best",
+        "Naive Bayes": "nb_best",
+        "Extra Trees": "et_best",
+        "Gradient Boosting": "gb_best",
+        "Quadratic Discriminant Analysis": "qda_best"
     }
 
 # ANSI color codes

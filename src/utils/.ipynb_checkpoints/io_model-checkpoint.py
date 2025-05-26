@@ -53,6 +53,6 @@ def load_model(name, verbose=True):
         model = pickle.load(f)
 
     if verbose:
-        print(f"📦 Model {pretty_model_names[name]} loaded from: {path}")
+        print(f"📦 Model {pretty_model_name[name]} loaded from: {path}")
 
     return model
