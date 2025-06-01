@@ -58,7 +58,7 @@ def get_predictions(model, X_test: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     Generate predictions and probabilities using the input model.
 
     Args:
-        model (object): Trained scikit-learn or compatible model.
+        model (UFCModel): A trained UFCModel.
         X_test (np.ndarray): Test feature matrix.
 
     Returns:
@@ -67,30 +67,11 @@ def get_predictions(model, X_test: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     if hasattr(model, "predict_proba"):
         probs = model.predict_proba(X_test)[:, 1]
     else:
-        probs = model.decision_function(X_test)
+        probs = model.model.decision_function(X_test)
         probs = 1 / (1 + np.exp(-probs))  # sigmoid
 
     preds = model.predict(X_test)
     return preds, probs
-
-
-def parameters_dict(models_dict: dict) -> dict:
-    """
-    Extract the best parameters from a dictionary of trained models.
-
-    Args:
-        models_dict (dict): Dictionary of models keyed by name.
-
-    Returns:
-        dict: Dictionary of best parameters or a default message if unavailable.
-    """
-    best_params = {}
-    for model_name, model in models_dict.items():
-        if hasattr(model.model, 'best_params_'):
-            best_params[model_name] = model.model.best_params_
-        else:
-            best_params[model_name] = 'No GridSearchCV parameters'
-    return best_params
 
 def print_header(
     text: str,
@@ -135,7 +116,7 @@ def get_pretty_model_name(model: object) -> str:
     If the model is a GridSearchCV wrapper, extract the base estimator.
 
     Args:
-        model (object): A trained model, possibly wrapped in GridSearchCV.
+        model (UFCModel): A trained UFCModel.
 
     Returns:
         str: Human-readable model name defined in `pretty_names`.
@@ -162,7 +143,6 @@ def get_supported_models() -> list[str]:
         list[str]: Sorted list of model names.
     """
     return sorted(default_params.keys())
-
 
 def log_training_result(
     model_name: str,

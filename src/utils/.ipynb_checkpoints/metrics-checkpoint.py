@@ -24,18 +24,18 @@ logger = logging.getLogger(__name__)
 DEFAULT_METRICS = ['Accuracy', 'Precision', 'Recall', 'F1 Score', 'ROC AUC', 'Brier Score']
 
 
-def evaluate_model(
+def evaluate_metrics(
     model: object,
     data_test: pd.DataFrame,
-    verbose: bool = True,
-    plot: bool = True,
+    verbose: bool = False,
+    plot: bool = False,
     metrics_to_compute: Optional[Sequence[str]] = None
 ) -> dict[str, float]:
     """
     Evaluate a trained model using various metrics and optionally plot the confusion matrix.
 
     Args:
-        model (object): A trained classifier.
+        model (UFCModel): A trained UFCModel.
         data_test (pd.DataFrame): Test dataset with a 'label' column.
         verbose (bool): Whether to print evaluation results.
         plot (bool): Whether to plot the confusion matrix.
@@ -52,7 +52,6 @@ def evaluate_model(
 
     X_test = data_test.drop(columns=['label'])
     y_test = data_test['label']
-    model_name = get_pretty_model_name(model)
 
     metrics_to_compute = metrics_to_compute or DEFAULT_METRICS
 
@@ -62,21 +61,44 @@ def evaluate_model(
         logger.error(f"Error during prediction: {e}")
         raise
 
-    results = compute_metrics(y_test, preds, probs, metrics_to_compute)
-
+    metrics = compute_metrics(y_test, preds, probs, metrics_to_compute)
+    
     if verbose:
-        print_header(f"Evaluation for: [{model_name}]", color='bright_green')
+        print_header(f"Evaluation for: [{model.name}]", color='bright_green')
         if hasattr(model, "best_params_"):
             print_header(f"Best Parameters: {model.best_params_}", color='bright_magenta')
         for k, v in results.items():
             print(f"{k:>12}: {v:.4f}")
 
-    if plot:
-        plot_confusion_matrix(y_test, preds)
+    return metrics
 
-    return results
+def evaluate_cm(
+    model: object,
+    data_test: pd.DataFrame,
+) -> dict[str, float]:
+    """
+    Compute the confusion matrix for a given trained model and test dataset.
 
+    Args:
+        model (object): A trained classifier with a `.predict()` method.
+        data_test (pd.DataFrame): Test dataset containing feature columns and a 'label' column.
 
+    Returns:
+        np.ndarray: Confusion matrix as a 2D array.
+
+    Raises:
+        ValueError: If 'label' column is missing in the test data.
+    """
+    if 'label' not in data_test.columns:
+        raise ValueError("The test set must include a 'label' column.")
+
+    X_test = data_test.drop(columns=['label'])
+    y_test = data_test['label']
+    y_pred = model.predict(X_test)
+    cm = confusion_matrix(y_test, y_pred)
+
+    return cm
+    
 def compute_metrics(
     y_true: Union[pd.Series, np.ndarray],
     y_pred: Union[pd.Series, np.ndarray],
@@ -117,7 +139,7 @@ def compute_metrics(
 
 
 def compare_metrics(
-    models_dict: dict[str, object],
+    models_list: list[object],
     metrics_to_compute: Optional[Sequence[str]] = None
 ) -> pd.DataFrame:
     """
@@ -133,16 +155,15 @@ def compare_metrics(
     logger.info("Starting comparison of models...")
     results = []
 
-    for name, model in models_dict.items():
-        logger.info(f"Evaluating: {name}")
-        metrics = model.evaluate_model(verbose=False, plot=False, metrics_to_compute=metrics_to_compute)
-        metrics['Model'] = name
+    for model in models_list:
+        logger.info(f"Evaluating: {model.name}")
+        metrics = model.metrics
+        metrics['Model'] = model.name
         results.append(metrics)
 
     df = pd.DataFrame(results).set_index('Model')
     print_header("Comparison Completed", color='bright_green')
     return df
-
 
 def best_model_per_metric(metrics_df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -162,23 +183,3 @@ def best_model_per_metric(metrics_df: pd.DataFrame) -> pd.DataFrame:
         logger.info(f"Best model for {metric}: {best_model} ({best_value:.4f})")
 
     return pd.DataFrame(best)
-
-
-def plot_confusion_matrix(y_true: Union[pd.Series, np.ndarray], y_pred: Union[pd.Series, np.ndarray]) -> None:
-    """
-    Plot a confusion matrix using matplotlib.
-
-    Args:
-        y_true (array-like): True class labels.
-        y_pred (array-like): Predicted class labels.
-
-    Returns:
-        None
-    """
-    print_header("Confusion Matrix", color='bright_cyan')
-    cm = confusion_matrix(y_true, y_pred)
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm)
-    disp.plot(cmap='Blues')
-    plt.title("Confusion Matrix")
-    plt.tight_layout()
-    plt.show()
