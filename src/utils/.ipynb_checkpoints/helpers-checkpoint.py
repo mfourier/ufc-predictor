@@ -1,37 +1,26 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-from models.config import *
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import (
-    accuracy_score,
-    precision_score,
-    recall_score,
-    f1_score,
-    roc_auc_score,
-    confusion_matrix,
-    ConfusionMatrixDisplay,
-    RocCurveDisplay
-)
-from datetime import datetime
-import os
+from models.config import colors, pretty_names, default_params
 
-def split_and_standardize(data: pd.DataFrame, categorical_columns: list, test_size: float = 0.2, random_state: int = 42):
+def split_and_standardize(
+    data: pd.DataFrame,
+    categorical_columns: list[str],
+    test_size: float = 0.2,
+    random_state: int = 42
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Splits the input DataFrame into training and testing sets, and standardizes
-    only the numerical feature columns (deduced from excluding categorical_columns and 'label').
+    Split the input DataFrame into train/test sets and standardize only numerical features.
 
     Args:
-        data (pd.DataFrame): Input DataFrame with features and a 'label' column.
-        categorical_columns (list): List of column names considered categorical (not to be standardized).
-        test_size (float, optional): Proportion of the dataset to include in the test split.
-        random_state (int, optional): Random seed for reproducibility.
+        data (pd.DataFrame): DataFrame with feature columns and a 'label' column.
+        categorical_columns (list[str]): Column names that should not be standardized.
+        test_size (float): Proportion of test set.
+        random_state (int): Seed for reproducibility.
 
     Returns:
-        tuple:
-            - pd.DataFrame: data_train with standardized numerical features and original labels.
-            - pd.DataFrame: data_test with standardized numerical features and original labels.
+        tuple[pd.DataFrame, pd.DataFrame]: (data_train, data_test) with standardized numerical features.
     """
     if data.empty:
         raise ValueError("Input DataFrame is empty.")
@@ -40,20 +29,16 @@ def split_and_standardize(data: pd.DataFrame, categorical_columns: list, test_si
     if data.isnull().sum().any():
         raise ValueError("DataFrame contains missing values. Please clean the data before proceeding.")
 
-    # Deduce numerical columns (excluding 'label' and categorical columns)
     excluded_columns = set(categorical_columns + ['label'])
     numerical_columns = [col for col in data.columns if col not in excluded_columns]
 
-    # Separate features and label
     X = data.drop(columns='label')
     y = data['label']
 
-    # Split with stratification
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=test_size, random_state=random_state, stratify=y
     )
 
-    # Standardize only numerical columns
     scaler = StandardScaler()
     X_train_scaled = X_train.copy()
     X_test_scaled = X_test.copy()
@@ -61,58 +46,69 @@ def split_and_standardize(data: pd.DataFrame, categorical_columns: list, test_si
     X_train_scaled[numerical_columns] = scaler.fit_transform(X_train[numerical_columns])
     X_test_scaled[numerical_columns] = scaler.transform(X_test[numerical_columns])
 
-    # Combine scaled features with target
     data_train = pd.concat([X_train_scaled, y_train], axis=1).reset_index(drop=True)
     data_test = pd.concat([X_test_scaled, y_test], axis=1).reset_index(drop=True)
 
-    print_header('Numerical Data has been standardized and the dataset has been split', color = 'bright_green')
+    print_header("Numerical data standardized and split complete", color="bright_green")
     return data_train, data_test
 
-    
-def get_predictions(model, X_test):
+
+def get_predictions(model, X_test: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """
-    Returns model predictions and probabilities based on the input model type.
-    
+    Generate predictions and probabilities using the input model.
+
     Args:
-        model (object): The trained model (either PyTorch or scikit-learn).
-        X_test (numpy.ndarray): The input features for testing.
+        model (object): Trained scikit-learn or compatible model.
+        X_test (np.ndarray): Test feature matrix.
 
     Returns:
-        tuple: A tuple containing the predictions and probabilities.
+        tuple: (predictions, probabilities)
     """
-    # For scikit-learn models, check if the model has predict_proba or decision_function
     if hasattr(model, "predict_proba"):
-        # For models with a predict_proba method (like RandomForest, AdaBoost, etc.)
         probs = model.predict_proba(X_test)[:, 1]
     else:
-        # For models like SVM or Logistic Regression, use decision_function
         probs = model.decision_function(X_test)
-        # Apply sigmoid for SVMs or linear models to convert to probabilities
-        probs = 1 / (1 + np.exp(-probs))
-    
+        probs = 1 / (1 + np.exp(-probs))  # sigmoid
+
     preds = model.predict(X_test)
     return preds, probs
 
-def parameters_dict(models_dict):
-    # Diccionario para almacenar los modelos y sus mejores parámetros
+
+def parameters_dict(models_dict: dict) -> dict:
+    """
+    Extract the best parameters from a dictionary of trained models.
+
+    Args:
+        models_dict (dict): Dictionary of models keyed by name.
+
+    Returns:
+        dict: Dictionary of best parameters or a default message if unavailable.
+    """
     best_params = {}
-    
-    # Iterar sobre los modelos en models_dict
     for model_name, model in models_dict.items():
-        # Verificar si el modelo tiene un atributo 'best_params_'
-        if hasattr(model, 'best_params_'):
-            best_params[model_name] = model.best_params_
+        if hasattr(model.model, 'best_params_'):
+            best_params[model_name] = model.model.best_params_
         else:
-            # Si no tiene 'best_params_', se coloca un mensaje de error
             best_params[model_name] = 'No GridSearchCV parameters'
     return best_params
-    
-def print_header(text: str, color: str = "default", padding_side = 2, padding_top_bottom = 0) -> None:
-    """
-    Prints a beautified and centered string inside a stylish ASCII box, with optional color.
 
+def print_header(
+    text: str,
+    color: str = "default",
+    padding_side: int = 2,
+    padding_top_bottom: int = 0
+) -> None:
+    """
+    Print a centered message in an ASCII-styled box with optional color formatting.
+
+    Args:
+        text (str): The message to print.
+        color (str): Color name defined in the colors dictionary.
+        padding_side (int): Horizontal padding on each side.
+        padding_top_bottom (int): Number of empty lines above and below the text.
+    
     Example:
-    >>> print_header("Training UFC Fight Predictor Model", color="cyan")
+        >>> print_header("Training started", color="cyan")
     """
     color_code = colors.get(color.lower(), colors["default"])
     text_line = f"{text.center(len(text) + padding_side * 2)}"
@@ -129,48 +125,64 @@ def print_header(text: str, color: str = "default", padding_side = 2, padding_to
     lines.extend([empty_line] * padding_top_bottom)
     lines.append(bottom_border)
 
-    # Print with color
     print(color_code + "\n".join(lines) + colors["default"])
 
-def get_pretty_model_name(model) -> str:
-    """
-    Returns the pretty name of the model type.
-    If the model is wrapped in a GridSearchCV, it retrieves the base model.
 
-    Example:
-    >>> get_pretty_model_name(knn_model)
-    'K-Nearest Neighbors'
+def get_pretty_model_name(model: object) -> str:
     """
-    
+    Return the display-friendly name of a trained model.
+
+    If the model is a GridSearchCV wrapper, extract the base estimator.
+
+    Args:
+        model (object): A trained model, possibly wrapped in GridSearchCV.
+
+    Returns:
+        str: Human-readable model name defined in `pretty_names`.
+
+    Raises:
+        ValueError: If the model's class is not mapped in `pretty_names`.
+    """
     base_model = model.best_estimator_
     model_name = type(base_model).__name__
 
-    # Si el modelo no tiene un nombre bonito mapeado, lanzamos un error
     if model_name not in pretty_names:
-        raise ValueError(f"Model '{model_name}' does not have a predefined pretty name in the mapping.")
+        raise ValueError(
+            f"Model '{model_name}' does not have a predefined pretty name in the mapping."
+        )
 
-    # Devuelve el nombre bonito
     return pretty_names[model_name]
 
-def get_supported_models():
+
+def get_supported_models() -> list[str]:
     """
-    Returns a sorted list of all supported model names.
+    Retrieve all supported model identifiers defined in `default_params`.
 
     Returns:
-        list: List of model names (str) available in default_params.
+        list[str]: Sorted list of model names.
     """
     return sorted(default_params.keys())
 
-def log_training_result(model_name, best_params, metrics, duration, log_path='../data/results/training_log.csv'):
-    """
-    Logs training information into a cumulative CSV file.
 
-    Parameters:
-        model_name (str): Name of the model.
-        best_params (dict): Parameters found by GridSearchCV.
-        metrics (dict): Evaluation metrics such as accuracy, f1, etc.
-        duration (float): Training time in seconds.
-        log_path (str): Path to the CSV file where the log will be saved.
+def log_training_result(
+    model_name: str,
+    best_params: dict,
+    metrics: dict,
+    duration: float,
+    log_path: str = "../data/results/training_log.csv"
+) -> None:
+    """
+    Log the training results of a model into a cumulative CSV file.
+
+    Args:
+        model_name (str): Name of the model used in training.
+        best_params (dict): Dictionary of hyperparameters found by GridSearchCV.
+        metrics (dict): Dictionary containing evaluation metrics (accuracy, F1, etc.).
+        duration (float): Duration of training in seconds.
+        log_path (str): Path where the CSV log will be stored.
+
+    Returns:
+        None
     """
     log_entry = {
         'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
@@ -187,4 +199,4 @@ def log_training_result(model_name, best_params, metrics, duration, log_path='..
         df = pd.DataFrame([log_entry])
 
     df.to_csv(log_path, index=False)
-    print(f'✅ Training logged to {log_path}')
+    print(f"✅ Training logged to {log_path}")

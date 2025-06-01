@@ -1,11 +1,17 @@
 import os
 import pickle
-from models.config import *
-from .helpers import *
 
-def get_models_dir():
+from models.config import pretty_model_name
+from .helpers import get_pretty_model_name
+
+
+def get_models_dir() -> str:
     """
-    Returns the absolute path to the 'models' directory at the project root.
+    Get the absolute path to the 'models' directory at the project root.
+    Creates the directory if it does not exist.
+
+    Returns:
+        str: Absolute path to the models directory.
     """
     current_dir = os.path.dirname(os.path.abspath(__file__))  # src/utils
     project_root = os.path.abspath(os.path.join(current_dir, '..', '..'))  # ufc-predictor/
@@ -14,14 +20,17 @@ def get_models_dir():
     return models_dir
 
 
-def save_model(model, name, overwrite=True):
+def save_model(model: object, name: str, overwrite: bool = True) -> None:
     """
-    Saves a model in .pkl format in the 'models' folder.
+    Save a trained model to a .pkl file in the 'models' directory.
 
-    Parameters:
-    - model: Trained model object.
-    - name (str): Filename without extension.
-    - overwrite (bool): If False and file exists, raises an error.
+    Args:
+        model (object): The trained model object.
+        name (str): Filename (without extension) to save the model as.
+        overwrite (bool): Whether to overwrite the file if it already exists.
+
+    Raises:
+        FileExistsError: If the file exists and overwrite is False.
     """
     path = os.path.join(get_models_dir(), f"{name}.pkl")
 
@@ -30,19 +39,23 @@ def save_model(model, name, overwrite=True):
 
     with open(path, 'wb') as f:
         pickle.dump(model, f)
+
     print(f"✅ Model {get_pretty_model_name(model)} saved to: {path}")
 
 
-def load_model(name, verbose=True):
+def load_model(name: str, verbose: bool = True) -> object:
     """
-    Loads a model from the 'models' folder.
+    Load a model from the 'models' directory.
 
-    Parameters:
-    - name (str): Filename without extension.
-    - verbose (bool): Whether to print the loading path.
+    Args:
+        name (str): Filename (without extension) of the model to load.
+        verbose (bool): Whether to print the loading message.
 
     Returns:
-    - model: Loaded model object.
+        object: The loaded model object.
+
+    Raises:
+        FileNotFoundError: If the specified file does not exist.
     """
     path = os.path.join(get_models_dir(), f"{name}.pkl")
 
