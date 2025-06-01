@@ -90,7 +90,8 @@ ufc-predictor/
 │   ├── utils/
 │   │   ├── helpers.py             # Data preparation and utility functions
 │   │   ├── metrics.py             # Evaluation and plotting metrics functions
-│   │   └── io_models.py           # Saving/loading models to/from disk
+│   │   ├── io_models.py           # Saving/loading models to/from disk
+│   │   └── predictor.py           # UFCModel class: loading, predicting, evaluating trained models
 ├── docs/                          # Model documentation in Markdown format
 ├── img/                           # Directory for images and visualizations
 
