@@ -3,7 +3,6 @@ from typing import Optional, Union, Sequence
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from sklearn.metrics import (
     accuracy_score,
     precision_score,
@@ -12,10 +11,9 @@ from sklearn.metrics import (
     roc_auc_score,
     brier_score_loss,
     confusion_matrix,
-    ConfusionMatrixDisplay,
 )
 
-from .helpers import get_pretty_model_name, get_predictions, print_header
+from .helpers import get_predictions, print_header
 
 # Logging config
 logging.basicConfig(level=logging.INFO)
@@ -25,12 +23,11 @@ DEFAULT_METRICS = ['Accuracy', 'Precision', 'Recall', 'F1 Score', 'ROC AUC', 'Br
 
 
 def evaluate_metrics(
-    model: object,
-    data_test: pd.DataFrame,
-    verbose: bool = False,
-    plot: bool = False,
-    metrics_to_compute: Optional[Sequence[str]] = None
-) -> dict[str, float]:
+        model: object,
+        data_test: pd.DataFrame,
+        verbose: bool = False,
+        metrics_to_compute: Optional[Sequence[str]] = None
+    ) -> dict[str, float]:
     """
     Evaluate a trained model using various metrics and optionally plot the confusion matrix.
 
@@ -73,9 +70,9 @@ def evaluate_metrics(
     return metrics
 
 def evaluate_cm(
-    model: object,
-    data_test: pd.DataFrame,
-) -> dict[str, float]:
+        model: object,
+        data_test: pd.DataFrame,
+    ) -> dict[str, float]:
     """
     Compute the confusion matrix for a given trained model and test dataset.
 
@@ -100,10 +97,10 @@ def evaluate_cm(
     return cm
     
 def compute_metrics(
-    y_true: Union[pd.Series, np.ndarray],
-    y_pred: Union[pd.Series, np.ndarray],
-    y_proba: Optional[Union[np.ndarray, list]],
-    metrics_to_compute: Sequence[str]
+        y_test: Union[pd.Series, np.ndarray],
+        y_pred: Union[pd.Series, np.ndarray],
+        y_proba: Optional[Union[np.ndarray, list]],
+        metrics_to_compute: Sequence[str]
 ) -> dict[str, float]:
     """
     Compute performance metrics for classification tasks.
@@ -121,17 +118,17 @@ def compute_metrics(
 
     for metric in metrics_to_compute:
         if metric == 'Accuracy':
-            results['Accuracy'] = accuracy_score(y_true, y_pred)
+            results['Accuracy'] = accuracy_score(y_test, y_pred)
         elif metric == 'Precision':
-            results['Precision'] = precision_score(y_true, y_pred, zero_division=1)
+            results['Precision'] = precision_score(y_test, y_pred, zero_division=1)
         elif metric == 'Recall':
-            results['Recall'] = recall_score(y_true, y_pred, zero_division=1)
+            results['Recall'] = recall_score(y_test, y_pred, zero_division=1)
         elif metric == 'F1 Score':
-            results['F1 Score'] = f1_score(y_true, y_pred, zero_division=1)
+            results['F1 Score'] = f1_score(y_test, y_pred, zero_division=1)
         elif metric == 'ROC AUC' and y_proba is not None:
-            results['ROC AUC'] = roc_auc_score(y_true, y_proba)
+            results['ROC AUC'] = roc_auc_score(y_test, y_proba)
         elif metric == 'Brier Score' and y_proba is not None:
-            results['Brier Score'] = brier_score_loss(y_true, y_proba)
+            results['Brier Score'] = brier_score_loss(y_test, y_proba)
         else:
             logger.warning(f"Unsupported or unavailable metric: {metric}")
 
@@ -139,9 +136,8 @@ def compute_metrics(
 
 
 def compare_metrics(
-    models_list: list[object],
-    metrics_to_compute: Optional[Sequence[str]] = None
-) -> pd.DataFrame:
+        models_list: list[object],
+    ) -> pd.DataFrame:
     """
     Compare multiple models using specified metrics.
 
