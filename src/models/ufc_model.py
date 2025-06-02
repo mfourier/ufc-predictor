@@ -3,7 +3,7 @@ import numpy as np
 from typing import Optional, Sequence
 from sklearn.base import BaseEstimator
 import matplotlib.pyplot as plt
-from .helpers import get_pretty_model_name, get_predictions, print_header
+from utils.helpers import get_pretty_model_name, get_predictions, print_header
 import logging
 
 from sklearn.metrics import (

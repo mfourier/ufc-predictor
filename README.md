@@ -74,27 +74,28 @@ The following machine learning models have been implemented to predict UFC fight
 ```bash
 ufc-predictor/
 ├── data/
-│   ├── raw/                       # Original fight data
-│   └── processed/                 # Cleaned & transformed datasets
+│   ├── raw/                          # Original fight data
+│   └── processed/                    # Cleaned & transformed datasets (e.g., ufc_train.csv, ufc_test.csv)
 ├── notebooks/
 │   ├── 01-etl.ipynb                  # Data extraction and cleaning
 │   ├── 02-eda.ipynb                  # Exploratory Data Analysis
-│   ├── 03-feature_engineering.ipynb  # Feature Engineering
-│   ├── 04-training.ipynb             # Model training
-│   └── 05-model_experiments.ipynb    # Models metrics comparisons, results analysis and experimentation
+│   ├── 03-feature_engineering.ipynb # Feature Engineering (usa UFCData)
+│   ├── 04-training.ipynb            # Model training (usa solo ufc_train.csv)
+│   └── 05-model_experiments.ipynb   # Models metrics comparisons, results analysis and experimentation
 ├── src/
 │   ├── models/
-│   │   ├── model_factory.py       # Central model selection and training
-│   │   ├── nn_model.py            # PyTorch neural network implementation
-│   │   └── config.py              # Model-related configuration settings
+│   │   ├── model_factory.py         # Central model selection and training
+│   │   ├── nn_model.py              # PyTorch neural network implementation
+│   │   ├── config.py                # Model-related configuration settings
+│   │   └── ufc_model.py             # UFCModel class: loading, predicting, evaluating trained models
 │   ├── utils/
-│   │   ├── helpers.py             # Data preparation and utility functions
-│   │   ├── metrics.py             # Evaluation and plotting metrics functions
-│   │   ├── io_models.py           # Saving/loading models to/from disk
-│   │   └── predictor.py           # UFCModel class: loading, predicting, evaluating trained models
-├── docs/                          # Model documentation in Markdown format
-├── img/                           # Directory for images and visualizations
-
+│   │   ├── helpers.py               # Data preparation and utility functions
+│   │   ├── metrics.py               # Evaluation and plotting metrics functions
+│   │   ├── io_models.py             # Saving/loading models to/from disk
+│   │   └── ufc_data.py              # UFCData class: data splitting, feature standardization
+├── docs/                             # Model documentation in Markdown format
+├── img/                              # Directory for images and visualizations
+└── requirements.txt                  # Dependency lis
 ```
 
 ## 🚀 Installation & Usage

@@ -5,21 +5,52 @@ from typing import Optional
 import pandas as pd
 from sklearn.model_selection import GridSearchCV
 from utils.helpers import *
+from utils.ufc_data import UFCData
 from .config import *
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
-# Supported model identifiers
 SUPPORTED_MODELS: list[str] = list(default_params.keys())
 
+def model_factory(
+        model_name: str,
+        ufc_data: UFCData,
+        model_params: Optional[dict] = None
+    ) -> GridSearchCV:
+    """
+    Selects and builds a model based on the specified model name and a UFCData object.
+
+    Args:
+        model_name (str): Identifier of the model to build (must be in SUPPORTED_MODELS).
+        ufc_data (UFCData): An instance of UFCData containing preprocessed and standardized training data.
+        model_params (dict, optional): Dictionary with model instances and hyperparameters.
+
+    Returns:
+        GridSearchCV: A trained GridSearchCV object with the best estimator.
+
+    Raises:
+        ValueError: If model name is invalid or processed training data is not available.
+    """
+    if model_name not in SUPPORTED_MODELS:
+        raise ValueError(
+            f"Invalid model '{model_name}'. "
+            f"Supported models are: {', '.join(SUPPORTED_MODELS)}"
+        )
+
+    try:
+        X_train, y_train = ufc_data.get_processed_train()
+    except ValueError as e:
+        raise ValueError(f"Error retrieving standardized training data: {e}")
+
+    return build_model(model_name, X_train, y_train, model_params)
 
 def build_model(
-    model_name: str,
-    X_train: pd.DataFrame,
-    y_train: pd.Series,
-    model_params: Optional[dict] = None
-) -> GridSearchCV:
+        model_name: str,
+        X_train: pd.DataFrame,
+        y_train: pd.Series,
+        model_params: Optional[dict] = None
+    ) -> GridSearchCV:
     """
     Constructs and trains a model using GridSearchCV based on the given model name.
 
@@ -69,36 +100,3 @@ def build_model(
 
     return grid_search
 
-
-def model_factory(
-    model_name: str,
-    data_train: pd.DataFrame,
-    model_params: Optional[dict] = None
-) -> GridSearchCV:
-    """
-    Selects and builds a model based on the specified model name and training data.
-
-    Args:
-        model_name (str): Identifier of the model to build (must be in SUPPORTED_MODELS).
-        data_train (pd.DataFrame): Training dataset with features and a 'label' column.
-        model_params (dict, optional): Dictionary with model instances and hyperparameters.
-
-    Returns:
-        GridSearchCV: A trained GridSearchCV object with the best estimator.
-
-    Raises:
-        ValueError: If 'label' column is missing or if the model name is invalid.
-    """
-    if 'label' not in data_train.columns:
-        raise ValueError("The dataframe must contain a 'label' column.")
-
-    if model_name not in SUPPORTED_MODELS:
-        raise ValueError(
-            f"Invalid model '{model_name}'. "
-            f"Supported models are: {', '.join(SUPPORTED_MODELS)}"
-        )
-
-    X_train = data_train.drop(columns=['label'])
-    y_train = data_train['label']
-
-    return build_model(model_name, X_train, y_train, model_params)

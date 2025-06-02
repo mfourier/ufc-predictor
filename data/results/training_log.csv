@@ -17,3 +17,4 @@ timestamp,model,duration_sec,Accuracy,Precision,Recall,F1 Score,ROC AUC,Brier Sc
 2025-05-26 00:44:29,Gradient Boosting,129.89,0.6173,0.614,0.24,0.3451,0.6319,0.2311,,,,,,,,3.0,50.0,0.1,,
 2025-05-26 00:44:43,Extra Trees,13.83,0.5943,0.5487,0.1945,0.2872,0.6009,0.235,,,,,,,,20.0,100.0,,,
 2025-05-26 00:45:53,Quadratic Discriminant Analysis,2.16,0.5913,0.517,0.4145,0.4601,0.607,0.2453,,,,,,,,,,,,1.0
+2025-06-01 23:50:51,K-Nearest Neighbors,4.09,0.5462,0.4522,0.3782,0.4119,0.5515,0.2663,euclidean,7.0,distance,,,,,,,,,
