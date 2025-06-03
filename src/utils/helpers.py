@@ -5,9 +5,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from models.config import colors, pretty_names, default_params
 from datetime import datetime
-from src.models.ufc_model import UFCModel
 
-def get_predictions(model: UFCModel, X_test: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def get_predictions(model: object, X_test: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """
     Generate predictions and probabilities using the input model.
 

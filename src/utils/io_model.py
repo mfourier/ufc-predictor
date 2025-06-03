@@ -2,7 +2,7 @@ import os
 import pickle
 
 from models.config import pretty_model_name
-from .helpers import get_pretty_model_name
+from .helpers import get_pretty_model_name, print_header
 
 
 def get_models_dir() -> str:
@@ -83,7 +83,7 @@ def load_model(name: str, verbose: bool = True) -> object:
 
     return model
 
-def save_data(data: object, name: str, overwrite: bool = True) -> None:
+def save_data(data: object, name: str = 'ufc_data', overwrite: bool = True) -> None:
     """
     Save a UFCData object to a .pkl file in the 'data' directory.
 
@@ -100,7 +100,7 @@ def save_data(data: object, name: str, overwrite: bool = True) -> None:
     print(f"✅ UFCData object saved to: {path}")
 
 
-def load_data(name: str, verbose: bool = True) -> object:
+def load_data(name: str = 'ufc_data', verbose: bool = True) -> object:
     """
     Load a UFCData object from a .pkl file.
 
@@ -119,3 +119,44 @@ def load_data(name: str, verbose: bool = True) -> object:
     if verbose:
         print(f"📦 UFCData object loaded from: {path}")
     return data
+
+def save_ufc_datasets(UFCData, project_root):
+    """
+    Save raw and processed UFC train/test splits as CSV files.
+
+    Args:
+        UFCData (UFCData): Instance of UFCData with all preprocessing completed.
+        project_root (str or Path): Root directory of the project.
+
+    The following files are saved in 'data/processed/':
+        - ufc_train.csv: Raw training data (features + label)
+        - ufc_test.csv: Raw testing data (features + label)
+        - ufc_train_processed.csv: Processed (standardized + encoded) training data (features + label)
+        - ufc_test_processed.csv: Processed (standardized + encoded) testing data (features + label)
+    """
+    # Collect datasets
+    ufc_train = UFCData.get_df_train()
+    ufc_test = UFCData.get_df_test()
+    ufc_processed_train = UFCData.get_df_processed_train()
+    ufc_processed_test = UFCData.get_df_processed_test()
+
+    # Output file mapping
+    output_paths = {
+        "ufc_train.csv": ufc_train,
+        "ufc_test.csv": ufc_test,
+        "ufc_processed_train.csv": ufc_processed_train,
+        "ufc_processed_test.csv": ufc_processed_test,
+    }
+
+    # Save each dataset to CSV
+    for fname, df in output_paths.items():
+        df.to_csv(f"{project_root}/data/processed/{fname}", index=False)
+
+    print_header(
+        "Feature engineering files saved as:\n"
+        "  - ufc_train.csv\n"
+        "  - ufc_test.csv\n"
+        "  - ufc_processed_train.csv\n"
+        "  - ufc_processed_test.csv",
+        color='bright_green'
+    )

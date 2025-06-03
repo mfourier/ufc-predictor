@@ -15,7 +15,7 @@ SUPPORTED_MODELS: list[str] = list(default_params.keys())
 
 def model_factory(
         model_name: str,
-        ufc_data: UFCData,
+        UFCData: UFCData,
         model_params: Optional[dict] = None
     ) -> GridSearchCV:
     """
@@ -39,7 +39,7 @@ def model_factory(
         )
 
     try:
-        X_train, y_train = ufc_data.get_processed_train()
+        X_train, y_train = UFCData.get_processed_train()
     except ValueError as e:
         raise ValueError(f"Error retrieving standardized training data: {e}")
 
