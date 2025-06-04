@@ -96,6 +96,59 @@ class UFCModel:
         plt.tight_layout()
         plt.show()
 
+    def plot_feature_importance(self, feature_names: Optional[Sequence[str]] = None, max_display: int = 20) -> None:
+        """
+        Plot feature importance for the underlying model.
+    
+        Supports models with:
+            - feature_importances_ attribute (e.g., RandomForest, AdaBoost, etc.)
+            - coef_ attribute (e.g., LogisticRegression, LinearSVC, etc.)
+    
+        Args:
+            feature_names (Sequence[str] | None): List of feature names. If None, features will be named numerically.
+            max_display (int): Maximum number of top features to display.
+    
+        Raises:
+            AttributeError: If the underlying model does not provide feature importances.
+            ValueError: If feature_names length doesn't match the number of features.
+        """
+        model = self.model
+        if hasattr(model, "best_estimator_"):
+            model = model.best_estimator_
+    
+        if hasattr(model, "feature_importances_"):
+            importances = model.feature_importances_
+            title = f"Feature Importances - {self.name}"
+        elif hasattr(model, "coef_"):
+            importances = np.abs(model.coef_.ravel())
+            title = f"Absolute Coefficient Importances - {self.name}"
+        else:
+            raise AttributeError(
+                f"Model '{self.name}' does not provide feature importances (feature_importances_ or coef_)."
+            )
+    
+        # Default feature names if none provided
+        if feature_names is None:
+            feature_names = [f"Feature {i}" for i in range(len(importances))]
+        else:
+            if len(feature_names) != len(importances):
+                raise ValueError(
+                    f"Length of feature_names ({len(feature_names)}) does not match number of features ({len(importances)})."
+                )
+    
+        # Sort and select top features
+        sorted_idx = np.argsort(importances)[::-1][:max_display]
+        top_features = [feature_names[i] for i in sorted_idx]
+        top_importances = importances[sorted_idx]
+    
+        plt.figure(figsize=(10, max(4, len(top_features) // 2)))
+        plt.barh(top_features[::-1], top_importances[::-1])
+        plt.xlabel("Importance")
+        plt.title(title)
+        plt.tight_layout()
+        plt.show()
+
+
     def summary(self) -> None:
         """
         Print a formatted summary of the model, including best hyperparameters and last evaluation metrics.

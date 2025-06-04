@@ -1,2 +1,2 @@
 timestamp,model,duration_sec,Accuracy,Precision,Recall,F1 Score,ROC AUC,Brier Score,param_metric,param_n_neighbors,param_weights
-2025-05-26 00:16:25,K-Nearest Neighbors,4.14,0.5462184873949579,0.45217391304347826,0.3781818181818182,0.41188118811881186,0.551528326745718,0.2662578082033295,euclidean,7,distance
+2025-06-04 01:44:42,K-Nearest Neighbors,7.3,0.5745,0.4892,0.2873,0.362,0.5486,0.2559,euclidean,12,uniform

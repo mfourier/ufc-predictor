@@ -152,11 +152,4 @@ def save_ufc_datasets(UFCData, project_root):
     for fname, df in output_paths.items():
         df.to_csv(f"{project_root}/data/processed/{fname}", index=False)
 
-    print_header(
-        "Feature engineering files saved as:\n"
-        "  - ufc_train.csv\n"
-        "  - ufc_test.csv\n"
-        "  - ufc_processed_train.csv\n"
-        "  - ufc_processed_test.csv",
-        color='bright_green'
-    )
+    print(f"✅ UFCData object saved to: {output_paths.keys()}")

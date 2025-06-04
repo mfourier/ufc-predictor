@@ -24,6 +24,17 @@ def get_predictions(model: object, X_test: np.ndarray) -> tuple[np.ndarray, np.n
     preds = model.predict(X_test)
     return preds, probs
 
+def display_model_params_table(model_params):
+    rows = []
+    for model_name, (_, params) in model_params.items():
+        param_str = "; ".join([f"{key}: {value}" for key, value in params.items()])
+        rows.append({
+            "Model": model_name,
+            "Hyperparameters": param_str
+        })
+    df = pd.DataFrame(rows)
+    display(df)
+    
 def print_header(
     text: str,
     color: str = "default",
