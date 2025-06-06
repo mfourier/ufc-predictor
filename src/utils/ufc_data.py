@@ -79,7 +79,9 @@ class UFCData:
         self._X_train_processed: Optional[pd.DataFrame] = None
         self._X_test_processed: Optional[pd.DataFrame] = None
         self._scaler = None
+        
         self._corr = None
+        self._corr_processed = None
         
     # ---------- Data Engineering ----------
 
@@ -149,7 +151,7 @@ class UFCData:
         self._X_train_processed = pd.concat([X_train_bin, X_train_multi, X_train_base[self.numerical_columns]], axis=1)
         self._X_test_processed = pd.concat([X_test_bin, X_test_multi, X_test_base[self.numerical_columns]], axis=1)
 
-    def compute_corr(self, method: str = 'pearson', recalculate: bool = True) -> pd.DataFrame:
+    def compute_corr(self, method: str = 'pearson', recalculate: bool = True, processed: bool = False) -> pd.DataFrame:
         """
         Compute (and optionally cache) the correlation matrix for the processed training features.
 
@@ -168,13 +170,22 @@ class UFCData:
             - The matrix is cached as `self._corr`.
             - For feature analysis and leakage-free pipelines, use only training data.
         """
-        if self._X_train_processed is None:
-            raise ValueError(
-                "Processed training features not found. Please run standardize() and encode() before calling this method."
-            )
-        # Only recalculate if needed or not already cached
-        if recalculate or not hasattr(self, "_corr") or self._corr is None:
-            self._corr = self._X_train_processed.corr(method=method)
+        if processed:
+            if self._X_train_processed is None:
+                raise ValueError(
+                    "Processed training features not found. Please run standardize() and encode() before calling this method."
+                )
+            # Only recalculate if needed or not already cached
+            if recalculate or not hasattr(self, "_corr") or self._corr is None:
+                self._corr_processed = self._X_train_processed.corr(method=method)
+        else:
+            if self._X_train is None:
+                raise ValueError(
+                    "Training features not found."
+                )
+            # Only recalculate if needed or not already cached
+            if recalculate or not hasattr(self, "_corr") or self._corr is None:
+                self._corr = self._X_train[self.numerical_columns].corr(method=method)
 
     # ---------- Data Visualization ----------
 
@@ -184,11 +195,12 @@ class UFCData:
     figsize: tuple = (12, 10),
     annot: bool = False,
     cmap: str = "coolwarm",
-    title: str = "Correlation Matrix (Processed Train Set)",
+    title: str = "Correlation Matrix (Train Set)",
     fmt: str = ".2f",
     vmin: float = -1,
     vmax: float = 1,
     cbar: bool = True,
+    processed: bool = False,
     save_file: bool = False
     ) -> None:
         """
@@ -210,11 +222,20 @@ class UFCData:
         Raises:
             ValueError: If correlation matrix is not computed.
         """
-        if self._corr is None or not isinstance(self._corr, pd.DataFrame):
-            raise ValueError(
-                "Correlation matrix not found. Please run correlation_matrix() first."
-            )
-        corr = self._corr
+
+        if processed:
+            if self._corr_processed is None or not isinstance(self._corr_processed, pd.DataFrame):
+                raise ValueError(
+                    "Correlation matrix not found. Please run compute_corr() first."
+                )
+            corr = self._corr_processed
+        else:
+            if self._corr is None or not isinstance(self._corr, pd.DataFrame):
+                raise ValueError(
+                    "Correlation matrix not found. Please run compute_corr() first."
+                )
+            corr = self._corr
+
     
         # Determine which columns to plot based on threshold
         if threshold is not None:
@@ -249,11 +270,8 @@ class UFCData:
         plt.tight_layout()
     
         if save_file:
-            # Construye la ruta a /img/ relativa al archivo actual
             img_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../img/"))
             os.makedirs(img_dir, exist_ok=True)
-            # Construye un nombre de archivo seguro y único
-            # Quita caracteres no válidos del título y añade threshold
             safe_title = re.sub(r'[^\w\-_\. ]', '_', title)
             fname = f"{safe_title}"
             if threshold is not None:
@@ -269,6 +287,7 @@ class UFCData:
         self,
         threshold: float = 0.5,
         absval: bool = True,
+        processed: bool = False,
         n: int = 50
     ) -> pd.DataFrame:
         """
@@ -285,11 +304,19 @@ class UFCData:
         Raises:
             ValueError: If correlation matrix is not computed.
         """
-        if self._corr is None:
-            raise ValueError("Compute the correlation matrix first with correlation_matrix().")
-        corr = self._corr.copy()
+
+        if processed:
+            if self._corr_processed is None:
+                raise ValueError("Compute the correlation matrix first with correlation_matrix().")
+            corr = self._corr_processed.copy()
+        else:
+            if self._corr is None:
+                raise ValueError("Compute the correlation matrix first with correlation_matrix().")
+            corr = self._corr.copy()
+
         if absval:
             corr = corr.abs()
+            
         # Remove self-correlation (keep only upper triangle)
         mask = np.triu(np.ones(corr.shape), 1).astype(bool)
         corr_pairs = corr.where(mask).stack().reset_index()
@@ -306,7 +333,7 @@ class UFCData:
     figsize: tuple = (20, 10), 
     save_file: bool = False,
     suptitle: str = None
-) -> None:
+    ) -> None:
         """
         Plots feature distributions as histograms (numerical) or countplots (categorical/codified)
         for either raw or processed training data. Splits features into multiple figures if needed.
