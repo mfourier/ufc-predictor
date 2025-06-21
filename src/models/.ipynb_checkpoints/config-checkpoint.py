@@ -40,7 +40,7 @@ integration with the rest of the project.
 
 Author: [Maximiliano Lioi, MSc. Mathematics]
 """
-
+from xgboost import XGBClassifier
 from sklearn.svm import SVC
 from sklearn.ensemble import (
     RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier,
@@ -116,6 +116,16 @@ default_params = {
             # Proportion of training set used as validation for early stopping
             'validation_fraction': [0.1, 0.15]
         }
+    ),
+    "XGBoost": (
+        XGBClassifier(eval_metric='logloss'),
+        {
+            'n_estimators': [50, 100],
+            'learning_rate': [0.01, 0.1, 0.2],
+            'max_depth': [3, 5, 7],
+            'subsample': [0.8, 1.0],
+            'colsample_bytree': [0.8, 1.0]
+        }
     )
 }
 
@@ -129,7 +139,8 @@ pretty_names = {
     "ExtraTreesClassifier": "Extra Trees",
     "GradientBoostingClassifier": "Gradient Boosting",
     "QuadraticDiscriminantAnalysis": "Quadratic Discriminant Analysis",
-    "MLPClassifier": "Neural Network"
+    "MLPClassifier": "Neural Network",
+    "XGBClassifier": "XGBoost"
 }
 
 pretty_model_name = {
@@ -142,7 +153,8 @@ pretty_model_name = {
     "et_best": "Extra Trees",
     "gb_best": "Gradient Boosting",
     "qda_best": "Quadratic Discriminant Analysis",
-    "nn_best": "Neural Network"
+    "nn_best": "Neural Network",
+    "xgb_best": "XGBoost"
 }
 
 file_model_name = {
@@ -155,7 +167,8 @@ file_model_name = {
     "Extra Trees": "et_best",
     "Gradient Boosting": "gb_best",
     "Quadratic Discriminant Analysis": "qda_best",
-    "Neural Network": "nn_best"
+    "Neural Network": "nn_best",
+    "XGBoost": "xgb_best"
 }
 
 # Extended ANSI color codes for console outputs
