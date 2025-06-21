@@ -119,33 +119,37 @@ def load_data(name: str = 'ufc_data', verbose: bool = True) -> object:
     if verbose:
         print(f"📦 UFCData object loaded from: {path}")
     return data
-
-def save_ufc_datasets(UFCData, project_root):
+    
+def save_ufc_datasets(UFCData, project_root, name=None):
     """
-    Save raw and processed UFC train/test splits as CSV files.
+    Save raw and processed UFC train/test splits as CSV files, with optional suffix.
 
     Args:
         UFCData (UFCData): Instance of UFCData with all preprocessing completed.
         project_root (str or Path): Root directory of the project.
+        name (str, optional): Suffix to append to file names (before '.csv').
+                              Example: 'modeling' will produce 'ufc_train_modeling.csv'
 
     The following files are saved in 'data/processed/':
-        - ufc_train.csv: Raw training data (features + label)
-        - ufc_test.csv: Raw testing data (features + label)
-        - ufc_train_processed.csv: Processed (standardized + encoded) training data (features + label)
-        - ufc_test_processed.csv: Processed (standardized + encoded) testing data (features + label)
+        - ufc_train[_name].csv
+        - ufc_test[_name].csv
+        - ufc_processed_train[_name].csv
+        - ufc_processed_test[_name].csv
     """
+    suffix = f"_{name}" if name else ""
+    
     # Collect datasets
     ufc_train = UFCData.get_df_train()
     ufc_test = UFCData.get_df_test()
     ufc_processed_train = UFCData.get_df_processed_train()
     ufc_processed_test = UFCData.get_df_processed_test()
 
-    # Output file mapping
+    # Output file mapping with optional suffix
     output_paths = {
-        "ufc_train.csv": ufc_train,
-        "ufc_test.csv": ufc_test,
-        "ufc_processed_train.csv": ufc_processed_train,
-        "ufc_processed_test.csv": ufc_processed_test,
+        f"ufc_train{suffix}.csv": ufc_train,
+        f"ufc_test{suffix}.csv": ufc_test,
+        f"ufc_processed_train{suffix}.csv": ufc_processed_train,
+        f"ufc_processed_test{suffix}.csv": ufc_processed_test,
     }
 
     # Save each dataset to CSV
