@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
 import matplotlib.pyplot as plt
 import seaborn as sns
+import math
 
 save_path = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "../../img/")
@@ -190,19 +191,19 @@ class UFCData:
     # ---------- Data Visualization ----------
 
     def plot_corr(
-    self,
-    threshold: float = None,
-    figsize: tuple = (12, 10),
-    annot: bool = False,
-    cmap: str = "coolwarm",
-    title: str = "Correlation Matrix (Train Set)",
-    fmt: str = ".2f",
-    vmin: float = -1,
-    vmax: float = 1,
-    cbar: bool = True,
-    processed: bool = False,
-    save_file: bool = False
-    ) -> None:
+        self,
+        threshold: float = None,
+        figsize: tuple = (12, 10),
+        annot: bool = False,
+        cmap: str = "coolwarm",
+        title: str = "Correlation Matrix (Train Set)",
+        fmt: str = ".2f",
+        vmin: float = -1,
+        vmax: float = 1,
+        cbar: bool = True,
+        processed: bool = False,
+        save_file: bool = False
+        ) -> None:
         """
         Plots the correlation matrix stored in self._corr.
         If threshold is set, only features with at least one correlation
@@ -235,7 +236,6 @@ class UFCData:
                     "Correlation matrix not found. Please run compute_corr() first."
                 )
             corr = self._corr
-
     
         # Determine which columns to plot based on threshold
         if threshold is not None:
@@ -325,15 +325,15 @@ class UFCData:
         return corr_pairs.sort_values('Correlation', ascending=False).head(n)
 
     def plot_feature_distributions(
-    self, 
-    processed: bool = False, 
-    max_unique: int = 12, 
-    bins: int = 20, 
-    features_per_fig: int = 12,   # NUEVO parámetro
-    figsize: tuple = (20, 10), 
-    save_file: bool = False,
-    suptitle: str = None
-    ) -> None:
+        self, 
+        processed: bool = False, 
+        max_unique: int = 12, 
+        bins: int = 20, 
+        features_per_fig: int = 12,  
+        figsize: tuple = (20, 10), 
+        save_file: bool = False,
+        suptitle: str = None
+        ) -> None:
         """
         Plots feature distributions as histograms (numerical) or countplots (categorical/codified)
         for either raw or processed training data. Splits features into multiple figures if needed.
@@ -342,7 +342,6 @@ class UFCData:
             features_per_fig (int): Number of features per figure page.
             ... (otros args)
         """
-        import math
     
         if processed:
             if self._X_train_processed is None:
@@ -395,7 +394,54 @@ class UFCData:
                 plt.savefig(save_path, dpi=300, bbox_inches='tight')
                 print(f"Plot saved to: {save_path}")
             plt.show()
+
+
+    def plot_label_distribution(self, dataset: Literal['train', 'test', 'full'] = 'train', save_file: bool = False) -> None:
+        """
+        Plot a bar chart showing the distribution of the binary target variable (label).
     
+        Args:
+            dataset (str): Choose among 'train', 'test', or 'full' to indicate which set to plot.
+            save_file (bool): If True, saves the plot to the img/ folder.
+        """
+        if dataset == 'train':
+            y = self._y_train
+            title = "Label Distribution (Train Set)"
+        elif dataset == 'test':
+            y = self._y_test
+            title = "Label Distribution (Test Set)"
+        elif dataset == 'full':
+            y = self._y
+            title = "Label Distribution (Full Dataset)"
+        else:
+            raise ValueError("dataset must be one of: 'train', 'test', 'full'")
+    
+        label_counts = y.value_counts().sort_index().reset_index()
+        label_counts.columns = ['label', 'count']
+        label_counts['percent'] = label_counts['count'] / label_counts['count'].sum() * 100
+    
+        plt.figure(figsize=(6, 5))
+        sns.set(style="whitegrid")
+        ax = sns.barplot(data=label_counts, x="label", y="count", hue="label", palette="pastel", legend=False)
+    
+        for i, row in label_counts.iterrows():
+            ax.text(i, row['count'] + 0.01 * label_counts['count'].max(), f"{row['percent']:.1f}%", ha='center', fontsize=12)
+    
+        plt.title(title, fontsize=15, weight='bold')
+        plt.xlabel("Label")
+        plt.ylabel("Count")
+        plt.xticks([0, 1], ["0", "1"])
+        plt.tight_layout()
+    
+        if save_file:
+            img_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../img/"))
+            os.makedirs(img_dir, exist_ok=True)
+            fname = f"label_distribution_{dataset}.png"
+            save_path = os.path.join(img_dir, fname)
+            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            print(f"Plot saved to: {save_path}")
+    
+        plt.show()
     # ---------- Access to raw split ----------
 
     def get_X_train(self) -> pd.DataFrame:
@@ -471,9 +517,52 @@ class UFCData:
 
     # ---------- Summary ----------
 
-    def summary(self) -> None:
-        """Print dataset summary."""
-        print(f"🧪Samples: {self.raw_df.shape[0]}")
-        print(f"🧪Train/Test split: {self._X_train.shape[0]}/{self._X_test.shape[0]}")
-        print(f"🧪Features: {self._X_train.shape[1]}")
-        print(f"🧪Categorical: {len(self.categorical_columns)}, Numerical: {len(self.numerical_columns)}")
+    def summary(self, show_stats: bool = True, show_label_dist: bool = True) -> None:
+        """Print a detailed summary of the dataset and preprocessing state."""
+    
+        print("📊 UFC Dataset Summary")
+        print("-" * 40)
+    
+        # Tamaño general
+        print(f"🧪 Total samples      : {self.raw_df.shape[0]}")
+        print(f"🧪 Train/Test split  : {self._X_train.shape[0]} / {self._X_test.shape[0]}")
+        print(f"🧪 Total features     : {self._X.shape[1]}")
+        print("")
+    
+        # Tipos de variables
+        print(f"🔢 Numerical features : {len(self.numerical_columns)}")
+        print(f"🔠 Categorical features: {len(self.categorical_columns)}")
+        print(f"    - Binary          : {len(self.binary_columns)}")
+        print(f"    - Multiclass      : {len(self.multiclass_columns)}")
+        print("")
+    
+        # Variable objetivo
+        if show_label_dist:
+            print("🏷 Label distribution (raw):")
+            label_counts = self._y.value_counts().sort_index()
+            for label, count in label_counts.items():
+                pct = 100 * count / len(self._y)
+                print(f"   - Class {label}: {count} ({pct:.1f}%)")
+            print("")
+    
+        # Nulos
+        n_missing = self.raw_df.isnull().sum().sum()
+        if n_missing > 0:
+            print(f"⚠️ Missing values     : {n_missing} total")
+        else:
+            print("✅ No missing values detected")
+    
+        # Estadísticas básicas
+        if show_stats:
+            print("\n📈 Feature summary statistics (train set):")
+            desc = self._X_train.describe().T[["mean", "std", "min", "max"]]
+            print(desc.round(3).to_string())
+        
+        # Estado de preprocesamiento
+        print("\n⚙️ Preprocessing status:")
+        print(f"   - Standardized?    : {'✅' if self._X_train_processed is not None else '❌'}")
+        print(f"   - Encoded?         : {'✅' if self._X_train_processed is not None and any(col for col in self._X_train_processed.columns if not col in self.numerical_columns) else '❌'}")
+        print(f"   - Correlation cached (raw)      : {'✅' if self._corr is not None else '❌'}")
+        print(f"   - Correlation cached (processed): {'✅' if self._corr_processed is not None else '❌'}")
+    
+        print("-" * 40)
