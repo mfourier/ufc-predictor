@@ -78,28 +78,27 @@ The following classifiers have been integrated and tuned:
 ```bash
 ufc-predictor/
 ├── data/
-│   ├── raw/                        # Original fight data
-│   └── processed/                  # Cleaned and transformed datasets
+│   ├── raw/                         # Original fight data
+│   ├── processed/                   # Cleaned and transformed datasets
+│   └── results/                     # Evaluation logs, metrics, model reports
 ├── notebooks/
-│   ├── 01-etl.ipynb                  # Data extraction and cleaning
-│   ├── 02-eda.ipynb                  # Exploratory Data Analysis
-│   ├── 03-feature_engineering.ipynb  # Feature engineering using UFCData
-│   ├── 04-training.ipynb             # Model training using training set
-│   └── 05-model_experiments.ipynb    # Model comparison and results analysis
+│   ├── 01-etl.ipynb                 # Data extraction and cleaning
+│   ├── 02-eda.ipynb                 # Exploratory Data Analysis
+│   ├── 03-feature_engineering.ipynb # Feature engineering using UFCData
+│   ├── 04-training.ipynb            # Model training using training set
+│   └── 05-model_experiments.ipynb   # Model comparison and results analysis
 ├── src/
-│   ├── models/
-│   │   ├── model_factory.py       # Central model selection logic
-│   │   ├── nn_model.py            # PyTorch-based neural network class
-│   │   ├── config.py              # Model hyperparameters and registry
-│   │   └── ufc_model.py           # Wrapper class for saving, loading, and evaluating models
-│   ├── utils/
-│   │   ├── helpers.py             # Utility and preprocessing functions
-│   │   ├── metrics.py             # Evaluation metrics and plots
-│   │   ├── io_models.py           # Save/load model objects from disk
-│   │   └── ufc_data.py            # UFCData class: manages data splits and transformations
-├── docs/                          # Markdown documentation per model
-├── img/                           # Images for plots, logos, and visuals
-└── requirements.txt               # Project dependencies
+│   ├── config.py                    # Model hyperparameters and registry
+│   ├── data.py                      # UFCData class: manages data splits and transformations
+│   ├── helpers.py                   # Utility and preprocessing functions
+│   ├── io_model.py                  # Save/load model objects from disk
+│   ├── metrics.py                   # Evaluation metrics and plots
+│   ├── model.py                     # Wrapper class for saving, loading, and evaluating models
+│   ├── model_factory.py             # Central model selection logic
+├── docs/                            # Markdown documentation per model
+├── img/                             # Images for plots, logos, and visuals
+└── requirements.txt                 # Project dependencies
+
 
 ```
 
