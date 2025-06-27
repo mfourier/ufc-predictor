@@ -516,52 +516,73 @@ class UFCData:
 
     # ---------- Summary ----------
 
-    def summary(self, show_stats: bool = True, show_label_dist: bool = True) -> None:
-        """Print a detailed summary of the dataset and preprocessing state."""
-    
-        print("📊 UFC Dataset Summary")
-        print("-" * 40)
-    
-        # Tamaño general
-        print(f"🧪 Total samples      : {self.raw_df.shape[0]}")
-        print(f"🧪 Train/Test split  : {self._X_train.shape[0]} / {self._X_test.shape[0]}")
-        print(f"🧪 Total features     : {self._X.shape[1]}")
-        print("")
-    
-        # Tipos de variables
-        print(f"🔢 Numerical features : {len(self.numerical_columns)}")
-        print(f"🔠 Categorical features: {len(self.categorical_columns)}")
-        print(f"    - Binary          : {len(self.binary_columns)}")
-        print(f"    - Multiclass      : {len(self.multiclass_columns)}")
-        print("")
-    
-        # Variable objetivo
-        if show_label_dist:
-            print("🏷 Label distribution (raw):")
-            label_counts = self._y.value_counts().sort_index()
-            for label, count in label_counts.items():
-                pct = 100 * count / len(self._y)
-                print(f"   - Class {label}: {count} ({pct:.1f}%)")
-            print("")
-    
-        # Nulos
+    def __repr__(self) -> str:
+        """
+        Return a detailed string summary of the UFCData object.
+
+        Includes:
+            - Sample size and split proportions
+            - Feature types (numerical, categorical, binary, multiclass)
+            - Class balance
+            - Presence of missing values
+            - Feature summary statistics (train set)
+            - Preprocessing status
+
+        This is automatically shown in notebooks or when printing the object.
+        """
+        lines = []
+
+        # General
+        n_total = self.raw_df.shape[0]
+        n_train = self._X_train.shape[0]
+        n_test = self._X_test.shape[0]
+        n_features = self._X.shape[1]
+        n_num = len(self.numerical_columns)
+        n_cat = len(self.categorical_columns)
+        n_bin = len(self.binary_columns)
+        n_multi = len(self.multiclass_columns)
         n_missing = self.raw_df.isnull().sum().sum()
+
+        lines.append("📊 UFC Dataset Summary")
+        lines.append("-" * 40)
+        lines.append(f"🧪 Total samples      : {n_total}")
+        lines.append(f"🧪 Train/Test split  : {n_train} / {n_test}")
+        lines.append(f"🧪 Total features     : {n_features}")
+        lines.append("")
+        lines.append(f"🔢 Numerical features : {n_num}")
+        lines.append(f"🔠 Categorical features: {n_cat}")
+        lines.append(f"    - Binary          : {n_bin}")
+        lines.append(f"    - Multiclass      : {n_multi}")
+        lines.append("")
+
+        # Label distribution
+        lines.append("🏷 Label distribution (raw):")
+        label_counts = self._y.value_counts().sort_index()
+        for label, count in label_counts.items():
+            pct = 100 * count / len(self._y)
+            lines.append(f"   - Class {label}: {count} ({pct:.1f}%)")
+        lines.append("")
+
+        # Missing values
         if n_missing > 0:
-            print(f"⚠️ Missing values     : {n_missing} total")
+            lines.append(f"⚠️ Missing values     : {n_missing} total")
         else:
-            print("✅ No missing values detected")
-    
-        # Estadísticas básicas
-        if show_stats:
-            print("\n📈 Feature summary statistics (train set):")
-            desc = self._X_train.describe().T[["mean", "std", "min", "max"]]
-            print(desc.round(3).to_string())
-        
-        # Estado de preprocesamiento
-        print("\n⚙️ Preprocessing status:")
-        print(f"   - Standardized?    : {'✅' if self._X_train_processed is not None else '❌'}")
-        print(f"   - Encoded?         : {'✅' if self._X_train_processed is not None and any(col for col in self._X_train_processed.columns if not col in self.numerical_columns) else '❌'}")
-        print(f"   - Correlation cached (raw)      : {'✅' if self._corr is not None else '❌'}")
-        print(f"   - Correlation cached (processed): {'✅' if self._corr_processed is not None else '❌'}")
-    
-        print("-" * 40)
+            lines.append("✅ No missing values detected")
+
+        # Feature stats (train)
+        lines.append("\n📈 Feature summary statistics (train set):")
+        desc = self._X_train.describe().T[["mean", "std", "min", "max"]]
+        lines.append(desc.round(3).to_string())
+
+        # Preprocessing
+        lines.append("\n⚙️ Preprocessing status:")
+        lines.append(f"   - Standardized?    : {'✅' if self._X_train_processed is not None else '❌'}")
+        lines.append(f"   - Encoded?         : {'✅' if self._X_train_processed is not None and any(col not in self.numerical_columns for col in self._X_train_processed.columns) else '❌'}")
+        lines.append(f"   - Correlation cached (raw)      : {'✅' if self._corr is not None else '❌'}")
+        lines.append(f"   - Correlation cached (processed): {'✅' if self._corr_processed is not None else '❌'}")
+        lines.append("-" * 40)
+
+        return "\n".join(lines)
+
+    def summary(self) -> None:
+        print(self.__repr__())
