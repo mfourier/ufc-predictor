@@ -15,15 +15,17 @@ SUPPORTED_MODELS: list[str] = list(default_params.keys())
 def model_factory(
         model_name: str,
         UFCData: UFCData,
-        model_params: Optional[dict] = None
+        model_params: Optional[dict] = None,
+        scoring: str = 'accuracy'
     ) -> GridSearchCV:
     """
     Selects and builds a model based on the specified model name and a UFCData object.
 
     Args:
         model_name (str): Identifier of the model to build (must be in SUPPORTED_MODELS).
-        ufc_data (UFCData): An instance of UFCData containing preprocessed and standardized training data.
+        UFCData (UFCData): An instance of UFCData containing preprocessed and standardized training data.
         model_params (dict, optional): Dictionary with model instances and hyperparameters.
+        scoring (str, optional): Metric to use for hyperparameter tuning. Default is 'accuracy'.
 
     Returns:
         GridSearchCV: A trained GridSearchCV object with the best estimator.
@@ -42,13 +44,15 @@ def model_factory(
     except ValueError as e:
         raise ValueError(f"Error retrieving standardized training data: {e}")
 
-    return build_model(model_name, X_train, y_train, model_params)
+    return build_model(model_name, X_train, y_train, model_params, scoring)
+
 
 def build_model(
         model_name: str,
         X_train: pd.DataFrame,
         y_train: pd.Series,
-        model_params: Optional[dict] = None
+        model_params: Optional[dict] = None,
+        scoring: str = 'accuracy'
     ) -> GridSearchCV:
     """
     Constructs and trains a model using GridSearchCV based on the given model name.
@@ -58,7 +62,7 @@ def build_model(
         X_train (pd.DataFrame): Training input features.
         y_train (pd.Series): Training target labels.
         model_params (dict, optional): Dictionary specifying the base model and hyperparameter grid.
-            If None, default parameters from `default_params` are used.
+        scoring (str, optional): Metric used to evaluate models during grid search.
 
     Returns:
         GridSearchCV: A trained GridSearchCV object containing the best estimator.
@@ -77,7 +81,7 @@ def build_model(
 
     base_model, param_grid = model_params[model_name]
 
-    print_header(f"[{model_name}] UFC GridSearchCV Training", color='bright_magenta')
+    print_header(f"[{model_name}] UFC GridSearchCV Training ({scoring.capitalize()})", color='bright_magenta')
     time.sleep(1)
     logging.info(f"[{model_name}] 🤖 Training...")
 
@@ -85,7 +89,7 @@ def build_model(
         estimator=base_model,
         param_grid=param_grid,
         cv=5,
-        scoring='f1',
+        scoring=scoring,
         error_score='raise',
         verbose=3
     )
@@ -93,9 +97,8 @@ def build_model(
 
     time.sleep(1)
     logging.info(
-        f"[{model_name}] 🔍 Best Score: {grid_search.best_score_:.4f}\n"
+        f"[{model_name}] 🔍 Best {scoring.capitalize()}: {grid_search.best_score_:.4f}\n"
         f"[{model_name}] 🔍 Best Params: {grid_search.best_params_}"
     )
 
     return grid_search
-
