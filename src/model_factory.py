@@ -85,7 +85,7 @@ def build_model(
         estimator=base_model,
         param_grid=param_grid,
         cv=5,
-        scoring='accuracy',
+        scoring='f1',
         error_score='raise',
         verbose=3
     )

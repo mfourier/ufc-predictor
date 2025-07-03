@@ -1,12 +1,11 @@
 import logging
 import time
 from typing import Optional
-
 import pandas as pd
 from sklearn.model_selection import GridSearchCV
-from utils.helpers import *
-from utils.ufc_data import UFCData
-from .config import *
+from helpers import *
+from data import UFCData
+from config import *
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -86,7 +85,7 @@ def build_model(
         estimator=base_model,
         param_grid=param_grid,
         cv=5,
-        scoring='accuracy',
+        scoring='f1',
         error_score='raise',
         verbose=3
     )
