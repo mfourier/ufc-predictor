@@ -9,9 +9,10 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
 import matplotlib.pyplot as plt
 import seaborn as sns
 import math
+import os
 
 save_path = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../../img/")
+    os.path.join(os.path.dirname(__file__), "../img/")
 )
 
 class UFCData:
@@ -125,31 +126,43 @@ class UFCData:
         Returns:
             None
         """
-        
         X_train_base = self._X_train_processed if self._X_train_processed is not None else self._X_train.copy()
         X_test_base = self._X_test_processed if self._X_test_processed is not None else self._X_test.copy()
     
-        # Encode binary categorical columns with drop_first=True
-        X_train_bin = pd.get_dummies(
-            X_train_base[self.binary_columns], drop_first=True
-        ).astype(int)
-        X_test_bin = pd.get_dummies(
-            X_test_base[self.binary_columns], drop_first=True
-        ).astype(int)
+        # Handle binary columns
+        if self.binary_columns:
+            X_train_bin = pd.get_dummies(
+                X_train_base[self.binary_columns], drop_first=True
+            ).astype(int)
+            X_test_bin = pd.get_dummies(
+                X_test_base[self.binary_columns], drop_first=True
+            ).astype(int)
+            X_test_bin = X_test_bin.reindex(columns=X_train_bin.columns, fill_value=0)
+        else:
+            X_train_bin = pd.DataFrame(index=X_train_base.index)
+            X_test_bin = pd.DataFrame(index=X_test_base.index)
     
-        # Encode multiclass categorical columns with drop_first=False
-        X_train_multi = pd.get_dummies(
-            X_train_base[self.multiclass_columns], drop_first=False
-        ).astype(int)
-        X_test_multi = pd.get_dummies(
-            X_test_base[self.multiclass_columns], drop_first=False
-        ).astype(int)
+        # Handle multiclass columns
+        if self.multiclass_columns:
+            X_train_multi = pd.get_dummies(
+                X_train_base[self.multiclass_columns], drop_first=False
+            ).astype(int)
+            X_test_multi = pd.get_dummies(
+                X_test_base[self.multiclass_columns], drop_first=False
+            ).astype(int)
+            X_test_multi = X_test_multi.reindex(columns=X_train_multi.columns, fill_value=0)
+        else:
+            X_train_multi = pd.DataFrame(index=X_train_base.index)
+            X_test_multi = pd.DataFrame(index=X_test_base.index)
     
-        X_test_bin = X_test_bin.reindex(columns=X_train_bin.columns, fill_value=0)
-        X_test_multi = X_test_multi.reindex(columns=X_train_multi.columns, fill_value=0)
-    
-        self._X_train_processed = pd.concat([X_train_bin, X_train_multi, X_train_base[self.numerical_columns]], axis=1)
-        self._X_test_processed = pd.concat([X_test_bin, X_test_multi, X_test_base[self.numerical_columns]], axis=1)
+        # Concatenate all components
+        self._X_train_processed = pd.concat(
+            [X_train_bin, X_train_multi, X_train_base[self.numerical_columns]], axis=1
+        )
+        self._X_test_processed = pd.concat(
+            [X_test_bin, X_test_multi, X_test_base[self.numerical_columns]], axis=1
+        )
+
 
     def compute_corr(self, method: str = 'pearson', recalculate: bool = True, processed: bool = False) -> pd.DataFrame:
         """
@@ -465,7 +478,7 @@ class UFCData:
         """
         np.random.seed(seed)
         random_train = np.random.rand(len(self._X_train))
-        random_test = np.random.rand(len(self._X_test))
+        random_test = np.random.randn(len(self._X_test))
     
         if apply:
             self._X_train[feature_name] = random_train
