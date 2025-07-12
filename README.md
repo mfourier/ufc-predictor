@@ -1,7 +1,10 @@
 <h1 align="center">
-  🥋 UFC Fight Predictor Model
+  🥋 UFC Fight Predictor
   <img src="img/ufc_logo.png" width="70" style="vertical-align: middle; margin-left: 10px;" />
 </h1>
+
+## 📝 Project Summary
+UFC Fight Predictor is a machine learning pipeline developed to predict the outcomes of UFC fights by combining fighter statistics, performance history, and betting market signals. Integrating classical models, boosted ensembles, and neural networks, the project achieves an accuracy of approximately 66% — a level that reflects the inherent unpredictability and stochastic nature of MMA competition. The pipeline strikes a balance between predictive performance and interpretability, providing valuable insights into the key factors that influence fight outcomes.
 
 ---
 
@@ -39,31 +42,31 @@ $$x = fighter_{blue} - fighter_{red}$$
 
 ## 🛠️ Modeling Approach
 
-The modeling pipeline is organized into three interconnected stages:
+The modeling pipeline is structured into three interconnected stages, designed to maximize predictive performance while ensuring interpretability and robustness, all preprocessing, feature engineering, and data splitting is handled via the modular UFCData class, ensuring consistent transformations across training and evaluation. All models are wrapped and evaluated through the UFCModel class.
 
-1. **Feature Engineering**
-   - Fighter data is transformed into **relative differences** between Blue and Red fighters, covering height, reach, age, striking stats, grappling stats, and win streaks.
-   - Categorical variables (e.g., stance, fighting style, weight class) are one-hot encoded, using binary encoding for two-class categories and full dummies for multiclass features.
-   - Numerical features are standardized using scalers fitted exclusively on the training set, ensuring no data leakage.
-   - Additional features are engineered to capture recent activity, such as experience-per-age difference (total rounds fought divided by age), win-by-decision rate difference, and win-by-finish rate difference.
-   - Feature selection is guided by correlation analysis, aiming to minimize inter-feature correlation while preserving predictive signal.
-   - A synthetic random noise feature (`Random_Noise`) is introduced as a baseline for feature importance: different combinations were explored until the random column gained prominence, guiding the final selection. This iterative approach led to a feature set that maximizes predictive power without overfitting.
+1. **🔧 Feature Engineering**
+   - Fighter data is transformed into **relative differences** between Blue and Red fighters, capturing key attributes such as height, reach, age, striking metrics, grappling performance, and win streaks.
+   - Categorical variables (e.g., stance, fighting style, weight class) are one-hot encoded — binary categories use compact encoding, while multiclass variables retain full dummy representations.
+   - Numerical features are standardized using scalers fitted exclusively on the training set to prevent data leakage.
+   - Additional engineered features capture recent activity patterns, such as experience-per-age ratio (total rounds fought divided by age), win-by-decision rate difference, and win-by-finish rate difference.
+   - Feature selection is informed by correlation analysis, aiming to minimize redundancy while preserving predictive signal.
+   - A synthetic random noise feature (`Random_Noise`) is introduced as a baseline to assess feature importance. Different combinations were explored until the random column gained prominence, guiding the final selection. This iterative process resulted in a feature set that balances complexity, interpretability, and predictive power.
 
-2. **Model Training**
+2. **🤖 Model Training**
    - A diverse suite of machine learning models is trained, combining **classical algorithms**, **boosted ensemble methods**, and **deep learning architectures**.
    - The task is framed as a binary classification problem, with a baseline distribution of approximately 58% red corner wins, reflecting historical outcome imbalance.
-   - Hyperparameter tuning is conducted in the notebook `04-training.ipynb`, where detailed parameter grids are defined for each model using `GridSearchCV`. This systematic exploration includes models such as XGBoost, SVM, Random Forest, AdaBoost, and Neural Networks, optimizing performance across algorithmic families.
+   - Hyperparameter tuning is systematically conducted in the notebook `04-training.ipynb` using `GridSearchCV`, with detailed parameter grids defined for each model. This exploration includes models such as XGBoost, SVM, Random Forest, AdaBoost, and Neural Networks, optimizing performance across algorithmic families.
 
-3. **Evaluation**
-   - Model evaluation leverages a comprehensive set of metrics, computed via the modular `metrics.py` implementation:
+3. **📊 Evaluation**
+   - Model performance is assessed using a comprehensive set of metrics, computed via the modular `metrics.py` implementation:
      - **Accuracy** (0–1, higher is better): Overall proportion of correct predictions.
-     - **Precision** (0–1, higher is better): Fraction of positive predictions that are actually correct.
-     - **Recall** (0–1, higher is better): Fraction of true positives correctly identified.
-     - **F1 Score** (0–1, higher is better): Harmonic mean of precision and recall.
-     - **ROC-AUC** (0.5–1, higher is better): Probability the model ranks a random positive higher than a random negative.
+     - **Precision** (0–1, higher is better): Share of positive predictions that are actually correct.
+     - **Recall** (0–1, higher is better): Share of true positives correctly identified.
+     - **F1 Score** (0–1, higher is better): Harmonic mean of precision and recall, balancing both.
+     - **ROC-AUC** (0.5–1, higher is better): Probability that the model ranks a random positive higher than a random negative.
      - **Brier Score** (0–1, lower is better): Mean squared error between predicted probabilities and actual outcomes, reflecting calibration.
-   - Confusion matrices visualize classification performance across true/false positives and negatives.
-   - The framework supports automated multi-model comparison, identifying the top-performing model per metric, enabling robust benchmarking.
+   - Confusion matrices are used to visualize classification performance across true and false positives and negatives.
+   - The framework supports automated multi-model comparison, enabling the identification of top-performing models per metric and facilitating robust benchmarking.
 
 ---
 
@@ -125,53 +128,93 @@ ufc-predictor/
 
 ## 🔬 Noise-Based Feature Selection
 
-To improve feature selection, we implemented a **Noise-Based Feature Selection** experiment. A synthetic random feature (`Random_Noise`) was added to the dataset using `UFCData.add_random_feature()`. We then analyzed feature importance across multiple models. Any real feature showing lower importance than the random column was considered uninformative.
+To improve feature selection, we conducted a **Noise-Based Feature Selection** experiment. A synthetic random feature (`Random_Noise`) was added to the dataset using `UFCData.add_random_feature()`, and feature importance was analyzed across multiple models. Any real feature showing lower importance than the random column was considered uninformative and a candidate for exclusion.
 
-This iterative approach helped refine the feature set, balancing **model complexity, interpretability, and performance**. The experiment results are visualized in the images:
+This iterative process helped refine the feature set, striking a balance between **model complexity, interpretability, and predictive performance**.  
+**Below: on the left, feature importances with the random noise benchmark; on the right, after applying several feature engineering refinements, with the random noise column removed:**
 
-- `img/Noise-based-feature-selection-part4.png`: Feature importances with random noise benchmark.
-- `img/Noise-based-feature-selection-part5.png`: Final feature ranking across models.
+<p align="center">
+  <img src="img/Noise-based-feature-selection-part1.png" alt="Feature importances with random noise benchmark" width="45%"/>
+  <img src="img/Noise-based-feature-selection-part5.png" alt="Feature importances after feature engineering tweaks" width="45%"/>
+</p>
 
 ---
+
+### 🧠 Feature Importance Analysis
+
+The final feature importance analysis, aggregated across all models, reveals consistent patterns:
+
+- **Top features:**  
+  `OddsDif` stands out as the most influential feature across all models, both linear and tree-based, reflecting the predictive strength embedded in betting odds and the prior knowledge priced by the market. `WinRatioDif` and `SigStrDif` follow as key secondary features, capturing fighter performance history and striking effectiveness.
+
+- **Mid-level features:**  
+  Grappling-related variables like `AvgTDDif` and `AvgSubAttDif` show moderate importance, particularly in tree-based models. Weight category indicators (e.g., `WeightGroup_Heavy`) also contribute meaningfully in XGBoost and Gradient Boosting, aligning with the known higher KO power and fight-ending potential in heavier divisions.
+
+- **Low-importance features:**  
+  Variables such as `ReachAdvantageRatioDif`, `HeightReachRatioDif`, `SubDif`, `KODif`, and `LoseStreakDif` consistently rank at the bottom across models, suggesting limited predictive contribution in the current setup.
+
+- **Model-specific patterns:**  
+  Linear models (e.g., Logistic Regression, SVM) heavily rely on `OddsDif`, while ensemble and boosted models (e.g., Random Forest, XGBoost) balance performance metrics, weight groups, and historical stats.
+
+This analysis highlights that while betting odds carry strong baseline predictive power, adding well-engineered sports performance features enhances model robustness and interpretability.
 
 ## 📈 Model Performance Summary
 
-The table below summarizes the main evaluation metrics for the best models (values from `metrics.py` and experiment logs):
+The table below summarizes the main evaluation metrics for all trained models (values computed via `metrics.py` and experiment logs):
 
-| Model            | Accuracy | Precision | Recall | F1 Score | ROC-AUC | Brier Score |
-|------------------|----------|-----------|--------|----------|---------|-------------|
-| Random Forest    | 0.68     | 0.69      | 0.66   | 0.67     | 0.72    | 0.18        |
-| XGBoost         | 0.70     | 0.71      | 0.69   | 0.70     | 0.74    | 0.16        |
-| Neural Network   | 0.67     | 0.68      | 0.66   | 0.67     | 0.71    | 0.19        |
+| Model                      | Accuracy | Precision | Recall  | F1 Score | ROC-AUC | Brier Score |
+|----------------------------|----------|-----------|---------|----------|---------|-------------|
+| Logistic Regression        | 0.6595   | 0.6112    | 0.5179  | 0.5607   | 0.7132  | 0.2146      |
+| Random Forest              | 0.6536   | 0.6302    | 0.4226  | 0.5059   | 0.7073  | 0.2167      |
+| Support Vector Machine     | 0.6578   | 0.6064    | 0.5258  | 0.5632   | 0.7119  | 0.2129      |
+| K-Nearest Neighbors        | 0.6095   | 0.5467    | 0.4067  | 0.4664   | 0.6381  | 0.2359      |
+| AdaBoost                  | 0.6553   | 0.6264    | 0.4425  | 0.5186   | 0.7102  | 0.2126      |
+| Naive Bayes               | 0.6278   | 0.5569    | 0.5536  | 0.5552   | 0.6753  | 0.2317      |
+| Extra Trees               | 0.6320   | 0.5871    | 0.4147  | 0.4860   | 0.6657  | 0.2249      |
+| Gradient Boosting         | 0.6561   | 0.6176    | 0.4742  | 0.5365   | 0.7133  | 0.2107      |
+| Quadratic Discriminant Analysis | 0.6486   | 0.5928    | 0.5198  | 0.5539   | 0.6883  | 0.2212      |
+| Neural Network           | 0.6603   | 0.6194    | 0.4940  | 0.5497   | 0.7049  | 0.2152      |
+| XGBoost                  | 0.6570   | 0.6456    | 0.4048  | 0.4976   | 0.7107  | 0.2152      |
 
+> 📌 *Complete results and additional visualizations can be inspected in `notebooks/05-model_experiments.ipynb`.*
 
 ---
 
+### 📊 Metrics Analysis and Predictive Limits
+
+- Across all models, we observe a convergence around ~66% accuracy, with the best models (Neural Network, Logistic Regression, SVM) reaching slightly above 0.65–0.66. This performance plateau suggests that the dataset likely has limited additional predictive power beyond what is already captured by the current features and models.
+
+- It is important to highlight the inherent stochasticity of UFC fights: combat sports are highly dynamic and often unpredictable. A useful mental exercise is to imagine the same two fighters facing each other on different days—the outcome could realistically flip depending on minor factors, strategy, or randomness. This sets a natural upper bound for predictive performance, beyond which even the best models cannot generalize reliably.
+
+- Metrics like ROC-AUC (~0.71 for top models) indicate that the models do have meaningful discriminative power, but the moderate F1 scores and Brier scores show that prediction confidence and calibration are far from perfect. Additionally, the drop in recall across many models (especially tree-based ones) suggests that they tend to favor the majority class or struggle with edge cases.
+
+In summary, while machine learning models can extract useful patterns from fighter stats and historical data, the chaotic nature of MMA limits deterministic prediction accuracy, making ~66% a realistic ceiling under the current setup.
+
 ## 🧩 Feature Descriptions
 
-| Feature Name              | Description                                                                 |
-|--------------------------|-----------------------------------------------------------------------------|
-| FightStance_Open Stance  | Indicator if the fight is an open-stance matchup (orthodox vs southpaw).    |
-| WeightGroup_Heavy        | Indicator for heavy weight category.                                        |
-| WeightGroup_Light        | Indicator for light weight category.                                        |
-| WeightGroup_Medium       | Indicator for medium weight category.                                       |
-| WeightGroup_Women        | Indicator for women's category.                                             |
-| LoseStreakDif            | Difference in current losing streaks between Blue and Red.                  |
-| WinStreakDif             | Difference in current winning streaks between Blue and Red.                 |
-| KODif                   | Difference in number of KO/TKO wins.                                        |
-| SubDif                  | Difference in number of submission wins.                                    |
-| HeightDif               | Difference in height (cm or inches, Blue - Red).                            |
-| AgeDif                  | Difference in age (years, Blue - Red).                                       |
-| SigStrDif              | Difference in significant strikes landed per minute.                         |
-| AvgSubAttDif           | Difference in average submission attempts per 15 min.                        |
-| AvgTDDif              | Difference in average takedowns per 15 min.                                   |
-| FinishRateDif          | Difference in finish rates (percentage of fights not going to decision).     |
-| WinRatioDif           | Difference in overall win ratios.                                             |
-| ExpPerAgeDif         | Difference in experience per age (total rounds fought divided by age).        |
-| ReachAdvantageRatioDif| Difference in reach-to-height ratios.                                          |
-| HeightReachRatioDif   | Difference in height-to-reach ratios.                                          |
-| DecisionRateDif       | Difference in percentage of decision wins.                                     |
-| OddsDif              | Difference in betting odds (Blue - Red; lower = favoritism).                   |
+| Feature Name               | Description                                                                                                   |
+|---------------------------|-------------------------------------------------------------------------------------------------------------|
+| FightStance_Open Stance    | Indicator if the fight is an open-stance matchup (i.e., fighters have different stances, such as orthodox vs southpaw)                                  |
+| WeightGroup_Heavy         | Indicator if the fight involves a heavyweight fighter (Light Heavyweight or Heavyweight) (Blue vs Red).      |
+| WeightGroup_Light         | Indicator if the fight involves a lightweight fighter (Flyweight, Bantamweight, Featherweight, Lightweight) (Blue vs Red). |
+| WeightGroup_Medium        | Indicator if the fight involves a middleweight fighter (Welterweight, Middleweight) (Blue vs Red).          |
+| WeightGroup_Women        | Indicator if the fight involves a women's division fighter (Women’s Flyweight, Strawweight, Bantamweight, Featherweight) (Blue vs Red). |
+| LoseStreakDif            | Difference in current losing streaks (Blue - Red).                                                          |
+| WinStreakDif            | Difference in current winning streaks (Blue - Red).                                                        |
+| KODif                  | Difference in number of KO/TKO wins (Blue - Red).                                                           |
+| SubDif                 | Difference in number of submission wins (Blue - Red).                                                      |
+| HeightDif              | Difference in fighter height (cm, Blue - Red).                                                              |
+| AgeDif                 | Difference in fighter age (years, Blue - Red).                                                             |
+| SigStrDif             | Difference in significant strikes per minute (Blue - Red).                                                  |
+| AvgSubAttDif         | Difference in average submission attempts per 15 minutes (Blue - Red).                                       |
+| AvgTDDif            | Difference in average takedown attempts per 15 minutes (Blue - Red).                                         |
+| FinishRateDif        | Difference in finish rate (KO + Submission + TKO Doctor Stoppage wins / total fights, Blue - Red).         |
+| WinRatioDif         | Difference in win ratio (wins / [wins + losses], Blue - Red; safeguard applied for zero division).         |
+| ExpPerAgeDif        | Difference in experience per age (total rounds fought divided by age, Blue - Red).                         |
+| ReachAdvantageRatioDif | Difference in reach advantage ratio (reach in cm, Blue / Red).                                              |
+| HeightReachRatioDif  | Difference in height-to-reach ratio (height/reach, Blue - Red).                                              |
+| DecisionRateDif      | Difference in decision win rate (wins by decision / total wins, Blue - Red; safeguard applied for zero division). |
+| OddsDif             | Difference in betting odds (Blue odds - Red odds; lower values favor the fighter).                           |
 
 ---
 
