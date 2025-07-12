@@ -1,5 +1,5 @@
 <h1 align="center">
-  🥋 UFC Fight Predictor
+  🥋 UFC Fight Predictor Model
   <img src="img/ufc_logo.png" width="70" style="vertical-align: middle; margin-left: 10px;" />
 </h1>
 
