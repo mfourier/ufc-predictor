@@ -123,6 +123,58 @@ ufc-predictor/
 
 ---
 
+## 🔬 Noise-Based Feature Selection
+
+To improve feature selection, we implemented a **Noise-Based Feature Selection** experiment. A synthetic random feature (`Random_Noise`) was added to the dataset using `UFCData.add_random_feature()`. We then analyzed feature importance across multiple models. Any real feature showing lower importance than the random column was considered uninformative.
+
+This iterative approach helped refine the feature set, balancing **model complexity, interpretability, and performance**. The experiment results are visualized in the images:
+
+- `img/Noise-based-feature-selection-part4.png`: Feature importances with random noise benchmark.
+- `img/Noise-based-feature-selection-part5.png`: Final feature ranking across models.
+
+---
+
+## 📈 Model Performance Summary
+
+The table below summarizes the main evaluation metrics for the best models (values from `metrics.py` and experiment logs):
+
+| Model            | Accuracy | Precision | Recall | F1 Score | ROC-AUC | Brier Score |
+|------------------|----------|-----------|--------|----------|---------|-------------|
+| Random Forest    | 0.68     | 0.69      | 0.66   | 0.67     | 0.72    | 0.18        |
+| XGBoost         | 0.70     | 0.71      | 0.69   | 0.70     | 0.74    | 0.16        |
+| Neural Network   | 0.67     | 0.68      | 0.66   | 0.67     | 0.71    | 0.19        |
+
+
+---
+
+## 🧩 Feature Descriptions
+
+| Feature Name              | Description                                                                 |
+|--------------------------|-----------------------------------------------------------------------------|
+| FightStance_Open Stance  | Indicator if the fight is an open-stance matchup (orthodox vs southpaw).    |
+| WeightGroup_Heavy        | Indicator for heavy weight category.                                        |
+| WeightGroup_Light        | Indicator for light weight category.                                        |
+| WeightGroup_Medium       | Indicator for medium weight category.                                       |
+| WeightGroup_Women        | Indicator for women's category.                                             |
+| LoseStreakDif            | Difference in current losing streaks between Blue and Red.                  |
+| WinStreakDif             | Difference in current winning streaks between Blue and Red.                 |
+| KODif                   | Difference in number of KO/TKO wins.                                        |
+| SubDif                  | Difference in number of submission wins.                                    |
+| HeightDif               | Difference in height (cm or inches, Blue - Red).                            |
+| AgeDif                  | Difference in age (years, Blue - Red).                                       |
+| SigStrDif              | Difference in significant strikes landed per minute.                         |
+| AvgSubAttDif           | Difference in average submission attempts per 15 min.                        |
+| AvgTDDif              | Difference in average takedowns per 15 min.                                   |
+| FinishRateDif          | Difference in finish rates (percentage of fights not going to decision).     |
+| WinRatioDif           | Difference in overall win ratios.                                             |
+| ExpPerAgeDif         | Difference in experience per age (total rounds fought divided by age).        |
+| ReachAdvantageRatioDif| Difference in reach-to-height ratios.                                          |
+| HeightReachRatioDif   | Difference in height-to-reach ratios.                                          |
+| DecisionRateDif       | Difference in percentage of decision wins.                                     |
+| OddsDif              | Difference in betting odds (Blue - Red; lower = favoritism).                   |
+
+---
+
 ## 🚀 Getting Started
 
 To run the pipeline locally:
@@ -151,6 +203,7 @@ Comprehensive project documentation is available in the `docs/` folder, covering
 - **Model overviews and mathematical formulations**: Detailed descriptions of each algorithm, including underlying principles and expected behavior.
 - **Key assumptions and limitations**: Insights into when and why each model performs best, as well as potential pitfalls.
 - **Hyperparameter grids**: Full parameter configurations used for tuning with `GridSearchCV`, enabling reproducibility and extension.
+- **Training logs**: A CSV file automatically generated during experiments, storing key metrics, best hyperparameters, and training durations for each model, enabling result tracking and comparison across runs.
 - **Usage guides**: Step-by-step instructions on running the notebooks, customizing experiments, and interpreting results.
 
 ---
