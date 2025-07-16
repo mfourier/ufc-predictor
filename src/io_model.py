@@ -158,3 +158,6 @@ def save_ufc_datasets(UFCData, project_root, name=None):
         df.to_csv(f"{project_root}/data/processed/{fname}", index=False)
 
     print(f"✅ UFCData object saved to: {output_paths.keys()}")
+
+def list_models():
+    return [f.replace('.pkl', '') for f in os.listdir(get_models_dir()) if f.endswith('.pkl')]

@@ -1,8 +1,8 @@
 import os
 import pickle
 
-from models.config import pretty_model_name
-from .helpers import get_pretty_model_name, print_header
+from config import pretty_model_name
+from helpers import get_pretty_model_name
 
 
 def get_models_dir() -> str:
@@ -14,7 +14,7 @@ def get_models_dir() -> str:
         str: Absolute path to the models directory.
     """
     current_dir = os.path.dirname(os.path.abspath(__file__))  # src/utils
-    project_root = os.path.abspath(os.path.join(current_dir, '..', '..'))  # ufc-predictor/
+    project_root = os.path.abspath(os.path.join(current_dir, '..'))  # ufc-predictor/
     models_dir = os.path.join(project_root, 'models')
     os.makedirs(models_dir, exist_ok=True)
     return models_dir
@@ -27,11 +27,11 @@ def get_data_dir() -> str:
     Returns:
         str: Absolute path to the data directory.
     """
-    current_dir = os.path.dirname(os.path.abspath(__file__))  # src/utils
-    project_root = os.path.abspath(os.path.join(current_dir, '..', '..'))  # ufc-predictor/
-    models_dir = os.path.join(project_root, 'data/processed')
-    os.makedirs(models_dir, exist_ok=True)
-    return models_dir
+    current_dir = os.path.dirname(os.path.abspath(__file__))  # src/
+    project_root = os.path.abspath(os.path.join(current_dir, '..'))  # ufc-predictor/
+    data_dir = os.path.join(project_root, 'data/processed')
+    os.makedirs(data_dir, exist_ok=True)
+    return data_dir
 
 def save_model(model: object, name: str, overwrite: bool = True) -> None:
     """
@@ -116,6 +116,7 @@ def load_data(name: str = 'ufc_data', verbose: bool = True) -> object:
         raise FileNotFoundError(f"❌ UFCData file not found at: {path}")
     with open(path, 'rb') as f:
         data = pickle.load(f)
+    print(path)
     if verbose:
         print(f"📦 UFCData object loaded from: {path}")
     return data
@@ -157,3 +158,6 @@ def save_ufc_datasets(UFCData, project_root, name=None):
         df.to_csv(f"{project_root}/data/processed/{fname}", index=False)
 
     print(f"✅ UFCData object saved to: {output_paths.keys()}")
+
+def list_models():
+    return [f.replace('.pkl', '') for f in os.listdir(get_models_dir()) if f.endswith('.pkl')]
