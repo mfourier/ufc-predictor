@@ -1,9 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from models.config import colors, pretty_names, default_params
+from config import colors, pretty_names, default_params
 from datetime import datetime
 
 def get_predictions(model: object, X_test: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
@@ -141,3 +139,41 @@ def log_training_result(
 
     df.to_csv(log_path, index=False)
     print(f"✅ Training logged to {log_path}")
+
+def print_prediction_result(result):
+    """
+    Pretty-print the result dictionary from UFCPredictor.predict() without external dependencies.
+    """
+    red = result['red_summary']
+    blue = result['blue_summary']
+    pred = result['prediction']
+    prob_red = result['probability_red']
+    prob_blue = result['probability_blue']
+    features = result['feature_vector']
+    red_odds, blue_odds = result['odds']
+    line_sep = "-" * 60
+
+    # Header
+    print(f"\n{'🏆 UFC FIGHT PREDICTION RESULT':^60}")
+    print(line_sep)
+
+    # Fighter summaries
+    print(f"🔴 Red Corner (Favorite): {red['Fighter']} ({red['Year']})| Record: {red['Record']} | WeightClass: {red['WeightClass']} | Stance: {red['Stance']} | Red Odds: {red_odds}")
+    print(f"🔵 Blue Corner (Underdog): {blue['Fighter']} ({blue['Year']}) | Record: {blue['Record']} | WeightClass: {blue['WeightClass']} | Stance: {blue['Stance']} | Blue Odds: {blue_odds}")
+    print(line_sep)
+
+    # Prediction
+    print(f"🏅 Predicted Winner: {'🔵 BLUE' if pred == 'Blue' else '🔴 RED'}")
+    if prob_red is not None and prob_blue is not None:
+        print(f" → Red Win Probability : {prob_red*100:.1f}%")
+        print(f" → Blue Win Probability: {prob_blue*100:.1f}%")
+    print(line_sep)
+
+    # Feature differences
+    print("📊 Model input features for this matchup::")
+    for k, v in features.items():
+        if isinstance(v, (int, float)):
+            print(f"   {k:25}: {v: .3f}")
+        else:
+            print(f"   {k:25}: {v}")
+    print(line_sep + "\n")

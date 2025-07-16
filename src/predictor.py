@@ -20,7 +20,8 @@ class UFCPredictor:
         self.ufc_data = ufc_data
         self.scaler = ufc_data.get_scaler()
         self.numerical_columns = ufc_data.numerical_columns
-        
+        self.categorical_columns = ufc_data.categorical_columns
+
     def get_available_models(self):
         return list(self.models.keys())
     
@@ -103,7 +104,7 @@ class UFCPredictor:
             'AvgSubAttDif': blue['AvgSubAtt'] - red['AvgSubAtt'],
             'AvgTDDif': blue['AvgTDLanded'] - red['AvgTDLanded'],
             'FightStance': 'Closed Stance' if blue['Stance'] == red['Stance'] else 'Open Stance',
-            'WeightGroup': blue['WeightGroupMap'],
+            'WeightGroup': blue['WeightClassMap'],
             'FinishRateDif': blue['FinishRate'] - red['FinishRate'],
             'WinRatioDif': blue['WinRatio'] - red['WinRatio'],
             'ExpPerAgeDif': blue['ExpPerAge'] - red['ExpPerAge'],
@@ -189,10 +190,29 @@ class UFCPredictor:
             'probability_red': prob_red,
             'probability_blue': prob_blue,
             'feature_vector': features_df.to_dict(orient='records')[0],
-            'red_summary': red[['Fighter', 'Record', 'WeightClass', 'Stance']].to_dict(),
-            'blue_summary': blue[['Fighter', 'Record', 'WeightClass', 'Stance']].to_dict()
+            'red_summary': red[['Fighter', 'Year', 'Record', 'WeightClass', 'Stance']].to_dict(),
+            'blue_summary': blue[['Fighter', 'Year', 'Record', 'WeightClass', 'Stance']].to_dict(),
+            'odds': (red_odds, blue_odds)
         }
         return result
+    
+    def __repr__(self):
+        num_fighters = self.fighters_df['Fighter'].nunique()
+        num_weightclasses = self.fighters_df['WeightClass'].nunique()
+        scaler_name = type(self.scaler).__name__ if self.scaler else 'None'
+        model_keys = list(self.models.keys())
+        pretty_names = [pretty_model_name.get(key, key) for key in model_keys]
+
+        return (
+            f"🥋<UFCPredictor>🥋\n"
+            f"  📊 Fighters loaded       : {num_fighters}\n"
+            f"  🏋️‍♂️ Weight classes       : {num_weightclasses}\n"
+            f"  🧠 Available models      : {pretty_names}\n"
+            f"  ⭐ Default model         : {pretty_model_name.get(self.default_model, self.default_model)}\n"
+            f"  🔢 Numerical features    : {len(self.numerical_columns)} columns\n"
+            f"  🥊 Categorical features    : {len(self.categorical_columns)} columns\n"
+            f"  🛠️  Scaler               : {scaler_name}\n"
+        )
 
 
 
