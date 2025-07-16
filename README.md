@@ -182,7 +182,7 @@ The table below summarizes the main evaluation metrics for all trained models (v
 
 ### 📊 Metrics Analysis and Predictive Limits
 
-- Across all models, we observe a convergence around ~66% accuracy, with the best models (Neural Network, Logistic Regression, SVM) reaching slightly above 0.65–0.66. This performance plateau suggests that the dataset likely has limited additional predictive power beyond what is already captured by the current features and models.
+- Across all models, we observe a convergence around ~65% accuracy, with the best models (Neural Network, Logistic Regression, SVM) reaching slightly above 0.65–0.66. This performance plateau suggests that the dataset likely has limited additional predictive power beyond what is already captured by the current features and models.
 
 - It is important to highlight the inherent stochasticity of UFC fights: combat sports are highly dynamic and often unpredictable. A useful mental exercise is to imagine the same two fighters facing each other on different days—the outcome could realistically flip depending on minor factors, strategy, or randomness. This sets a natural upper bound for predictive performance, beyond which even the best models cannot generalize reliably.
 
