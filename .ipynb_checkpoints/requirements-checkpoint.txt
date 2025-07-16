@@ -1,6 +1,0 @@
-pandas==2.2.2
-numpy==1.26.4
-torch==2.0.0
-scikit-learn==1.5.1
-py-xgboost==2.1.4 
-
