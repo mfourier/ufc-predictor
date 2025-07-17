@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
-from config import pretty_model_name
-from io_model import load_model
-from model import UFCModel
+from src.config import pretty_model_name
+from src.io_model import load_model
+from src.model import UFCModel
 
 class UFCPredictor:
     """
@@ -161,7 +161,7 @@ class UFCPredictor:
 
         # Compute feature vector
         features_df = self.compute_feature_vector(red, blue, red_odds, blue_odds)
-
+        features_df_raw = features_df.copy()
         # Standardize numerical
         features_df = self.standardize(features_df)
 
@@ -189,7 +189,7 @@ class UFCPredictor:
             'prediction': 'Blue' if pred[0] == 1 else 'Red',
             'probability_red': prob_red,
             'probability_blue': prob_blue,
-            'feature_vector': features_df.to_dict(orient='records')[0],
+            'feature_vector': features_df_raw.to_dict(orient='records')[0],
             'red_summary': red[['Fighter', 'Year', 'Record', 'WeightClass', 'Stance']].to_dict(),
             'blue_summary': blue[['Fighter', 'Year', 'Record', 'WeightClass', 'Stance']].to_dict(),
             'odds': (red_odds, blue_odds)

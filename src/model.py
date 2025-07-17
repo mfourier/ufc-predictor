@@ -2,11 +2,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-import logging
 from typing import Optional, Sequence
 from sklearn.base import BaseEstimator
 from sklearn.metrics import ConfusionMatrixDisplay
-from helpers import get_pretty_model_name, print_header
+from src.helpers import get_pretty_model_name, print_header
 
 class UFCModel:
     def __init__(self, model: BaseEstimator):

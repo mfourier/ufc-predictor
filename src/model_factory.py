@@ -3,9 +3,9 @@ import time
 from typing import Optional
 import pandas as pd
 from sklearn.model_selection import GridSearchCV
-from helpers import *
-from data import UFCData
-from config import *
+from src.helpers import *
+from src.data import UFCData
+from src.config import *
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

@@ -1,8 +1,7 @@
 import os
 import pickle
-
-from config import pretty_model_name
-from helpers import get_pretty_model_name
+from src.config import pretty_model_name
+from src.helpers import get_pretty_model_name
 
 
 def get_models_dir() -> str:

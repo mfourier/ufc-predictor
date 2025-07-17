@@ -12,9 +12,9 @@ from sklearn.metrics import (
     confusion_matrix,
 )
 
-from helpers import get_predictions, print_header
-from data import UFCData
-from model import UFCModel
+from src.helpers import get_predictions, print_header
+from src.data import UFCData
+from src.model import UFCModel
 
 # Logging config
 logging.basicConfig(level=logging.INFO)
