@@ -190,8 +190,8 @@ class UFCPredictor:
             'probability_red': prob_red,
             'probability_blue': prob_blue,
             'feature_vector': features_df_raw.to_dict(orient='records')[0],
-            'red_summary': red[['Fighter', 'Year', 'Record', 'WeightClass', 'Stance']].to_dict(),
-            'blue_summary': blue[['Fighter', 'Year', 'Record', 'WeightClass', 'Stance']].to_dict(),
+            'red_summary': red.to_dict(),
+            'blue_summary': blue.to_dict(),
             'odds': (red_odds, blue_odds)
         }
         return result
