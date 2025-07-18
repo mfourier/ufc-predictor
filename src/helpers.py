@@ -154,33 +154,28 @@ def print_prediction_result(result):
     line_sep = "-" * 70
     c = colors  # alias for shorter
 
+    def print_corner_summary(corner, label, color, odds):
+        print(f"{color}{label:^70}{c['default']}")
+        print(f"  Record        : {corner['Record']}")
+        print(f"  Weight Class  : {corner['WeightClass']} | Stance: {corner['Stance']}")
+        print(f"  Odds          : {odds}")
+        print(f"  Height        : {corner.get('HeightCms', 'N/A')} cm | Reach: {corner.get('ReachCms', 'N/A')} cm")
+        print(f"  Age           : {corner.get('Age', 'N/A')}")
+        print(f"  Win Rate      : {corner.get('WinRate', 'N/A'):.2f} | FinishRate: {corner.get('FinishRate', 'N/A'):.2f}")
+        print(f"  KO Wins       : {corner.get('WinsByKO', 'N/A')} | Sub Wins: {corner.get('WinsBySubmission', 'N/A')}")
+        print(f"  Decision Rate : {corner.get('DecisionRate', 'N/A'):.2f} | Avg. Sig. Strike Landed: {corner.get('AvgSigStrLanded', 'N/A'):.2f}")
+        print(f"  Avg Sub Att   : {corner.get('AvgSubAtt', 'N/A'):.2f} | Avg TD Landed: {corner.get('AvgTDLanded', 'N/A'):.2f}")
+        print(f"{c['bright_yellow']}{line_sep}{c['default']}")
+
     # Header
     print(f"\n{c['bright_yellow']}{'🏆 UFC FIGHT PREDICTION RESULT':^70}{c['default']}")
     print(f"{c['bright_yellow']}{line_sep}{c['default']}")
 
-    # Red corner summary
-    print(f"{c['bright_red']}🔴 RED CORNER (Favorite): {red['Fighter']} ({red['Year']}){c['default']}")
-    print(f"  Record        : {red['Record']}")
-    print(f"  Weight Class   : {red['WeightClass']} | Stance: {red['Stance']}")
-    print(f"  Odds         : {red_odds}")
-    print(f"  Height        : {red.get('HeightCms', 'N/A')} cm | Reach: {red.get('ReachCms', 'N/A')} cm")
-    print(f"  Age          : {red.get('Age', 'N/A')}")
-    print(f"  Win Ratio      : {red.get('WinRatio', 'N/A'):.2f} | FinishRate: {red.get('FinishRate', 'N/A'):.2f}")
-    print(f"  KO Wins       : {red.get('WinsByKO', 'N/A')} | Sub Wins: {red.get('WinsBySubmission', 'N/A')}")
-    print(f"  Decision Rate  : {red.get('DecisionRate', 'N/A'):.2f} | Avg. Sig. Strike Landed: {red.get('AvgSigStrLanded', 'N/A'):.2f}")
-    print(f"{c['bright_yellow']}{line_sep}{c['default']}")
+    # Red corner
+    print_corner_summary(red, f"🔴 RED CORNER (Favorite): {red['Fighter']} ({red['Year']})", c['bright_red'], red_odds)
 
-    # Blue corner summary
-    print(f"{c['bright_blue']}🔵 BLUE CORNER (Underdog): {blue['Fighter']} ({blue['Year']}){c['default']}")
-    print(f"  Record        : {blue['Record']}")
-    print(f"  Weight Class   : {blue['WeightClass']} | Stance: {blue['Stance']}")
-    print(f"  Odds         : {blue_odds}")
-    print(f"  Height        : {blue.get('HeightCms', 'N/A')} cm | Reach: {blue.get('ReachCms', 'N/A')} cm")
-    print(f"  Age          : {blue.get('Age', 'N/A')}")
-    print(f"  Win Ratio      : {blue.get('WinRatio', 'N/A'):.2f} | FinishRate: {blue.get('FinishRate', 'N/A'):.2f}")
-    print(f"  KO Wins       : {blue.get('WinsByKO', 'N/A')} | Sub Wins: {blue.get('WinsBySubmission', 'N/A')}")
-    print(f"  Decision Rate  : {blue.get('DecisionRate', 'N/A'):.2f} | Avg. Sig. Strike Landed: {blue.get('AvgSigStrLanded', 'N/A'):.2f}")
-    print(f"{c['bright_yellow']}{line_sep}{c['default']}")
+    # Blue corner
+    print_corner_summary(blue, f"🔵 BLUE CORNER (Underdog): {blue['Fighter']} ({blue['Year']})", c['bright_blue'], blue_odds)
 
     # Prediction result
     winner_color = c['bright_blue'] if pred == 'Blue' else c['bright_red']
@@ -190,13 +185,16 @@ def print_prediction_result(result):
         print(f" → {c['bright_blue']}Blue Win Probability: {prob_blue*100:.1f}%{c['default']}")
     print(f"{c['bright_yellow']}{line_sep}{c['default']}")
 
-
     # Feature differences
-    print(f"{c['bright_cyan']}📊 MODEL INPUT FEATURES (Differences):{c['default']}")
+    print(f"{c['bright_cyan']}📊 MODEL INPUT VECTOR:{c['default']}")
     for k, v in features.items():
-        if isinstance(v, (int, float)):
+        if k == 'IsFiveRoundFight':
+            value = 'Yes' if v == 1 else 'No'
+            print(f"   {k:25}: {value}")
+        elif isinstance(v, (int, float)):
             print(f"   {k:25}: {v: .3f}")
         else:
             print(f"   {k:25}: {v}")
     print(f"{c['bright_yellow']}{line_sep}{c['default']}" + "\n")
+
 

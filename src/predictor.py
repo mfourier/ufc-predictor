@@ -79,7 +79,7 @@ class UFCPredictor:
         return selected_row
 
 
-    def compute_feature_vector(self, red, blue, red_odds, blue_odds):
+    def compute_feature_vector(self, red, blue, red_odds, blue_odds, is_five_round_fight):
         """
         Compute engineered features between two fighters, including odds.
 
@@ -96,9 +96,11 @@ class UFCPredictor:
         feature_vector = {
             'LoseStreakDif': blue['CurrentLoseStreak'] - red['CurrentLoseStreak'],
             'WinStreakDif': blue['CurrentWinStreak'] - red['CurrentWinStreak'],
+            'TotalTitleBoutDif': blue['TotalTitleBouts'] - red['TotalTitleBouts'],
             'KODif': blue['WinsByKO'] - red['WinsByKO'],
             'SubDif': blue['WinsBySubmission']- red['WinsBySubmission'],
             'HeightDif': blue['HeightCms'] - red['HeightCms'],
+            'ReachDif': blue['ReachCms'] - red['ReachCms'],
             'AgeDif': blue['Age'] - red['Age'],
             'SigStrDif': blue['AvgSigStrLanded'] - red['AvgSigStrLanded'],
             'AvgSubAttDif': blue['AvgSubAtt'] - red['AvgSubAtt'],
@@ -106,11 +108,11 @@ class UFCPredictor:
             'FightStance': 'Closed Stance' if blue['Stance'] == red['Stance'] else 'Open Stance',
             'WeightGroup': blue['WeightClassMap'],
             'FinishRateDif': blue['FinishRate'] - red['FinishRate'],
-            'WinRatioDif': blue['WinRatio'] - red['WinRatio'],
+            'WinRateDif': blue['WinRate'] - red['WinRate'],
             'ExpPerAgeDif': blue['ExpPerAge'] - red['ExpPerAge'],
-            'ReachAdvantageRatioDif': blue['ReachCms'] / red['ReachCms'],
             'HeightReachRatioDif': blue['HeightReachRatio'] - red['HeightReachRatio'],
             'DecisionRateDif': blue['DecisionRate'] - red['DecisionRate'],
+            'IsFiveRoundFight': is_five_round_fight,
             'OddsDif': blue_odds - red_odds
         }
         return pd.DataFrame([feature_vector])
@@ -144,7 +146,7 @@ class UFCPredictor:
         X_final = pd.concat([bin_encoded, multi_encoded, num_encoded], axis=1)
         return X_final
 
-    def predict(self, red_id, blue_id, red_odds, blue_odds, model_name):
+    def predict(self, red_id, blue_id, red_odds, blue_odds, is_five_round_fight, model_name):
         if red_id == blue_id:
             raise ValueError("❌ Red and Blue fighters must be different.")
 
@@ -160,8 +162,9 @@ class UFCPredictor:
             )
 
         # Compute feature vector
-        features_df = self.compute_feature_vector(red, blue, red_odds, blue_odds)
+        features_df = self.compute_feature_vector(red, blue, red_odds, blue_odds, is_five_round_fight)
         features_df_raw = features_df.copy()
+
         # Standardize numerical
         features_df = self.standardize(features_df)
 
