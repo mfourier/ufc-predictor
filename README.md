@@ -169,19 +169,20 @@ This analysis highlights that while betting odds carry strong baseline predictiv
 
 The table below summarizes the main evaluation metrics for all trained models (values computed via `metrics.py` and experiment logs):
 
-| Model                      | Accuracy | Precision | Recall  | F1 Score | ROC-AUC | Brier Score |
-|----------------------------|----------|-----------|---------|----------|---------|-------------|
-| Logistic Regression        | 0.6595   | 0.6112    | 0.5179  | 0.5607   | 0.7132  | 0.2146      |
-| Random Forest              | 0.6536   | 0.6302    | 0.4226  | 0.5059   | 0.7073  | 0.2167      |
-| Support Vector Machine     | 0.6578   | 0.6064    | 0.5258  | 0.5632   | 0.7119  | 0.2129      |
-| K-Nearest Neighbors        | 0.6095   | 0.5467    | 0.4067  | 0.4664   | 0.6381  | 0.2359      |
-| AdaBoost                  | 0.6553   | 0.6264    | 0.4425  | 0.5186   | 0.7102  | 0.2126      |
-| Naive Bayes               | 0.6278   | 0.5569    | 0.5536  | 0.5552   | 0.6753  | 0.2317      |
-| Extra Trees               | 0.6320   | 0.5871    | 0.4147  | 0.4860   | 0.6657  | 0.2249      |
-| Gradient Boosting         | 0.6561   | 0.6176    | 0.4742  | 0.5365   | 0.7133  | 0.2107      |
-| Quadratic Discriminant Analysis | 0.6486   | 0.5928    | 0.5198  | 0.5539   | 0.6883  | 0.2212      |
-| Neural Network           | 0.6603   | 0.6194    | 0.4940  | 0.5497   | 0.7049  | 0.2152      |
-| XGBoost                  | 0.6570   | 0.6456    | 0.4048  | 0.4976   | 0.7107  | 0.2152      |
+| Model                          | Accuracy | Precision | Recall  | F1 Score | ROC AUC | Brier Score |
+|---------------------------------|----------|-----------|---------|----------|---------|-------------|
+| Logistic Regression             | 0.6595   | 0.6112    | 0.5179  | 0.5607   | 0.7132  | 0.2146      |
+| Random Forest                  | 0.6578   | 0.6214    | 0.4722  | 0.5366   | 0.7057  | 0.2143      |
+| Support Vector Machine         | 0.6586   | 0.6068    | 0.5298  | 0.5657   | 0.7115  | 0.2128      |
+| K-Nearest Neighbors           | 0.6037   | 0.5363    | 0.4107  | 0.4652   | 0.6297  | 0.2383      |
+| AdaBoost                        | 0.6553   | 0.6264    | 0.4425  | 0.5186   | 0.7102  | 0.2172      |
+| Naive Bayes                    | 0.6228   | 0.5464    | 0.5952  | 0.5698   | 0.6597  | 0.2405      |
+| Extra Trees                     | 0.6478   | 0.6116    | 0.4405  | 0.5121   | 0.6816  | 0.2212      |
+| Gradient Boosting             | 0.6578   | 0.6396    | 0.4226  | 0.5090   | 0.7117  | 0.2161      |
+| Quadratic Discriminant Analysis | 0.6495   | 0.5950    | 0.5159  | 0.5526   | 0.6885  | 0.2216      |
+| Neural Network                | 0.6536   | 0.5965    | 0.5397  | 0.5667   | 0.7054  | 0.2141      |
+| XGBoost                         | 0.6578   | 0.6148    | 0.4940  | 0.5479   | 0.7097  | 0.2116      |
+
 
 > 📌 *Complete results and additional visualizations can be inspected in `notebooks/05-model_experiments.ipynb`.*
 
