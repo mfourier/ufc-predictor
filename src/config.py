@@ -145,16 +145,27 @@ pretty_names = {
 
 pretty_model_name = {
     "lr_best": "Logistic Regression",
+    "lr_best_no_odds": "Logistic Regression",
     "rf_best": "Random Forest",
+    "rf_best_no_odds": "Random Forest",
     "svm_best": "Support Vector Machine",
+    "svm_best_no_odds": "Support Vector Machine",
     "knn_best": "K-Nearest Neighbors",
+    "knn_best_no_odds": "K-Nearest Neighbors",
     "ab_best": "AdaBoost",
+    "ab_best_no_odds": "AdaBoost",
     "nb_best": "Naive Bayes",
+    "nb_best_no_odds": "Naive Bayes",
     "et_best": "Extra Trees",
+    "et_best_no_odds": "Extra Trees",
     "gb_best": "Gradient Boosting",
+    "gb_best_no_odds": "Gradient Boosting",
     "qda_best": "Quadratic Discriminant Analysis",
+    "qda_best_no_odds": "Quadratic Discriminant Analysis",
     "nn_best": "Neural Network",
-    "xgb_best": "XGBoost"
+    "nn_best_no_odds": "Neural Network",
+    "xgb_best": "XGBoost",
+    "xgb_best_no_odds": "XGBoost"
 }
 
 file_model_name = {

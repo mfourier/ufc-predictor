@@ -22,7 +22,8 @@ class UFCModel:
         self.score = getattr(model, "best_score_", None)
         self.metrics: Optional[dict[str, float]] = None
         self.cm = None
-
+        self.is_no_odds = False
+        
     @property
     def estimator(self):
         return getattr(self.model, 'best_estimator_', self.model)

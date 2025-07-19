@@ -101,10 +101,14 @@ def load_all_models(include_no_odds: bool = True, verbose: bool = True) -> list:
     """
     model_list = []
 
-    for name in pretty_model_name:
+    # Only use base models (skip already '_no_odds' keys)
+    base_names = [name for name in pretty_model_name if not name.endswith('_no_odds')]
+
+    for name in base_names:
         # Load regular model
         try:
             model_normal = UFCModel(model=load_model(name, verbose=verbose))
+            model_normal.is_no_odds = False  # ✅ mark as with-odds
             model_list.append(model_normal)
             logger.info(f"✅ Loaded model: {model_normal.name}")
         except Exception as e:
@@ -116,6 +120,7 @@ def load_all_models(include_no_odds: bool = True, verbose: bool = True) -> list:
             try:
                 model_no_odds = UFCModel(model=load_model(no_odds_name, verbose=verbose))
                 model_no_odds.name += " (no_odds)"
+                model_no_odds.is_no_odds = True  # ✅ mark as no-odds
                 model_list.append(model_no_odds)
                 logger.info(f"✅ Loaded model: {model_no_odds.name}")
             except FileNotFoundError:
@@ -124,3 +129,4 @@ def load_all_models(include_no_odds: bool = True, verbose: bool = True) -> list:
                 logger.error(f"❌ Failed to load '_no_odds' model '{no_odds_name}': {e}")
 
     return model_list
+

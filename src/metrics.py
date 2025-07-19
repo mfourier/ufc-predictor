@@ -164,8 +164,13 @@ def best_model_per_metric(metrics_df: pd.DataFrame) -> pd.DataFrame:
     """
     best = []
     for metric in metrics_df.columns:
-        best_model = metrics_df[metric].idxmax()
-        best_value = metrics_df[metric].max()
+        if metric == 'Brier Score':
+            best_model = metrics_df[metric].idxmin()
+            best_value = metrics_df[metric].min()
+        else:
+            best_model = metrics_df[metric].idxmax()
+            best_value = metrics_df[metric].max()
+
         best.append({"Metric": metric, "Best Model": best_model, "Value": round(best_value, 4)})
         logger.info(f"🏅 Best model for {metric}: {best_model} ({best_value:.4f})")
 
