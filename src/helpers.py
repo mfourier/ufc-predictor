@@ -11,6 +11,11 @@ from rich.table import Table
 from rich.columns import Columns
 from rich.box import ROUNDED
 from rich.text import Text
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 console = Console()
 
@@ -42,41 +47,6 @@ def display_model_params_table(model_params):
         })
     df = pd.DataFrame(rows)
     display(df)
-    
-def print_header(
-    text: str,
-    color: str = "default",
-    padding_side: int = 2,
-    padding_top_bottom: int = 0
-) -> None:
-    """
-    Print a centered message in an ASCII-styled box with optional color formatting.
-
-    Args:
-        text (str): The message to print.
-        color (str): Color name defined in the colors dictionary.
-        padding_side (int): Horizontal padding on each side.
-        padding_top_bottom (int): Number of empty lines above and below the text.
-    
-    Example:
-        >>> print_header("Training started", color="cyan")
-    """
-    color_code = colors.get(color.lower(), colors["default"])
-    text_line = f"{text.center(len(text) + padding_side * 2)}"
-    width = len(text_line)
-
-    top_border = f"╔{'═' * width}╗"
-    empty_line = f"║{' ' * width}║"
-    middle_line = f"║{text_line}║"
-    bottom_border = f"╚{'═' * width}╝"
-
-    lines = [top_border]
-    lines.extend([empty_line] * padding_top_bottom)
-    lines.append(middle_line)
-    lines.extend([empty_line] * padding_top_bottom)
-    lines.append(bottom_border)
-
-    print(color_code + "\n".join(lines) + colors["default"])
 
 def get_pretty_model_name(model: object) -> str:
     """
@@ -148,7 +118,7 @@ def log_training_result(
         df = pd.DataFrame([log_entry])
 
     df.to_csv(log_path, index=False)
-    print(f"✅ Training logged to {log_path}")
+    logger.info(f"✅ Training logged to {log_path}")
 
 def print_corner_summary(corner, label, color, odds=None):
     """
@@ -243,6 +213,19 @@ def print_prediction_result(result):
     header_text = Text("🏆 UFC FIGHT PREDICTION RESULT", style="bold yellow", justify="center")
     console.print(Panel(header_text, expand=True, border_style="magenta", box=ROUNDED))
 
+    # Prediction result
+    winner_color = "blue" if pred == 'Blue' else "red"
+    winner_text = f"🏅 Predicted Winner: [bold {winner_color}]{'🔵 BLUE' if pred == 'Blue' else '🔴 RED'}[/]"
+
+    prob_text = ""
+    if prob_red is not None and prob_blue is not None:
+        prob_text = f"\n→ [red]Red Win Probability[/]: {prob_red*100:.1f}%\n→ [blue]Blue Win Probability[/]: {prob_blue*100:.1f}%"
+
+    console.print(
+        Panel(winner_text + prob_text, border_style=winner_color, title="Prediction", expand=True),
+        justify="center"
+    )
+
     # Red corner summary
     print_corner_summary(
         corner=red,
@@ -259,18 +242,8 @@ def print_prediction_result(result):
         odds=blue_odds
     )
 
-    # Prediction result
-    winner_color = "blue" if pred == 'Blue' else "red"
-    winner_text = f"🏅 Predicted Winner: [bold {winner_color}]{'🔵 BLUE' if pred == 'Blue' else '🔴 RED'}[/]"
-
-    prob_text = ""
-    if prob_red is not None and prob_blue is not None:
-        prob_text = f"\n→ [red]Red Win Probability[/]: {prob_red*100:.1f}%\n→ [blue]Blue Win Probability[/]: {prob_blue*100:.1f}%"
-
-    console.print(Panel(winner_text + prob_text, border_style=winner_color, title="Prediction", expand=False))
-
     # Feature differences as a table
-    table = Table(title="📊 MODEL INPUT VECTOR", show_header=True, header_style="bold magenta")
+    table = Table(show_header=True, header_style="bold magenta")
     table.add_column("Feature", style="dim", width=30)
     table.add_column("Value", justify="right")
 
@@ -283,4 +256,9 @@ def print_prediction_result(result):
             value = str(v)
         table.add_row(k, value)
 
-    console.print(table)
+    console.print(
+        Panel(table, border_style="bright_cyan", title="📊 MODEL INPUT VECTOR", expand=False),
+        justify="center"
+    )
+
+

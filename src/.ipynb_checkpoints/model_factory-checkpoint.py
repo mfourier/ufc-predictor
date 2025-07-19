@@ -3,9 +3,9 @@ import time
 from typing import Optional
 import pandas as pd
 from sklearn.model_selection import GridSearchCV
-from helpers import *
-from data import UFCData
-from config import *
+from src.helpers import *
+from src.data import UFCData
+from src.config import *
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -81,7 +81,8 @@ def build_model(
 
     base_model, param_grid = model_params[model_name]
 
-    print_header(f"[{model_name}] UFC GridSearchCV Training ({scoring.capitalize()})", color='bright_magenta')
+    logger.info(f"[{model_name}] UFC GridSearchCV Training ({scoring.capitalize()}))
+
     time.sleep(1)
     logging.info(f"[{model_name}] 🤖 Training...")
 

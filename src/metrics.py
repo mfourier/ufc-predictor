@@ -12,7 +12,7 @@ from sklearn.metrics import (
     confusion_matrix,
 )
 
-from src.helpers import get_predictions, print_header
+from src.helpers import get_predictions
 from src.data import UFCData
 from src.model import UFCModel
 
@@ -35,7 +35,7 @@ def evaluate_metrics(
     Args:
         model (UFCModel): A trained model wrapper.
         ufc_data (UFCData): Dataset handler with standardized test data.
-        verbose (bool): Whether to print detailed results.
+        verbose (bool): Whether to log detailed results.
         metrics_to_compute (list, optional): Metrics to evaluate.
 
     Returns:
@@ -53,11 +53,13 @@ def evaluate_metrics(
     results = compute_metrics(y_test, preds, probs, metrics_to_compute)
 
     if verbose:
-        print_header(f"Evaluation for: [{model.name}]", color='bright_green')
+        logger.info("=" * 50)
+        logger.info(f"📊 Evaluation for: [{model.name}]")
         if model.best_params_:
-            print_header(f"Best Parameters: {model.best_params_}", color='bright_magenta')
+            logger.info(f"✨ Best Parameters: {model.best_params_}")
         for k, v in results.items():
-            print(f"{k:>12}: {v:.4f}")
+            logger.info(f"{k:>12}: {v:.4f}")
+        logger.info("=" * 50)
 
     return results
 
@@ -133,11 +135,11 @@ def compare_metrics(
     Returns:
         pd.DataFrame: Table comparing model performance.
     """
-    logger.info("Starting comparison of models...")
+    logger.info("🔍 Starting comparison of models...")
     results = []
 
     for model in models_list:
-        logger.info(f"Evaluating: {model.name}")
+        logger.info(f"Evaluating model: {model.name}")
         if model.metrics is None:
             logger.warning(f"Model {model.name} has no stored metrics.")
             continue
@@ -146,7 +148,7 @@ def compare_metrics(
         results.append(row)
 
     df = pd.DataFrame(results).set_index('Model')
-    print_header("Comparison Completed", color='bright_green')
+    logger.info("✅ Comparison completed.")
     return df
 
 
@@ -165,6 +167,6 @@ def best_model_per_metric(metrics_df: pd.DataFrame) -> pd.DataFrame:
         best_model = metrics_df[metric].idxmax()
         best_value = metrics_df[metric].max()
         best.append({"Metric": metric, "Best Model": best_model, "Value": round(best_value, 4)})
-        logger.info(f"Best model for {metric}: {best_model} ({best_value:.4f})")
+        logger.info(f"🏅 Best model for {metric}: {best_model} ({best_value:.4f})")
 
     return pd.DataFrame(best)

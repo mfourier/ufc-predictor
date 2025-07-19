@@ -1,34 +1,85 @@
 import pandas as pd
 import numpy as np
-from io_model import load_model
+from src.config import pretty_model_name
+from src.io_model import load_model
+from src.model import UFCModel
 
-class Predictor:
+class UFCPredictor:
     """
     Predictor class to handle UFC fight predictions using trained models and fighter stats.
     """
 
-    def __init__(self, fighters_df, model_names):
+    def __init__(self, fighters_df, ufc_data):
         self.fighters_df = fighters_df
-        self.model_paths = {name: f'{name}.pkl' for name in model_names}
-        self.models = {}
+        self.models = {
+            name: UFCModel(load_model(name, verbose=False))
+            for name in pretty_model_name
+        }
+
+        self.default_model = 'nn_best'  # or set to your preferred default
+        self.ufc_data = ufc_data
+        self.scaler = ufc_data.get_scaler()
+        self.numerical_columns = ufc_data.numerical_columns
+        self.categorical_columns = ufc_data.categorical_columns
 
     def get_available_models(self):
-        return list(self.model_paths.keys())
-
+        return list(self.models.keys())
+    
     def get_available_weightclasses(self):
         return sorted(self.fighters_df['WeightClass'].unique())
 
     def get_fighters_by_weightclass(self, weightclass):
         return sorted(self.fighters_df[self.fighters_df['WeightClass'] == weightclass]['Fighter'].unique())
 
-    def get_fighter_stats(self, name, weightclass):
-        df = self.fighters_df
-        row = df[(df['Fighter'] == name) & (df['WeightClass'] == weightclass)]
-        if row.empty:
-            raise ValueError(f"Fighter '{name}' not found in weightclass '{weightclass}'.")
-        return row.iloc[0]
+    def get_fighter_stats(self, name, year=None):
+        """
+        Retrieve the stats of a fighter for a specific year.
 
-    def compute_feature_vector(self, red, blue, red_odds, blue_odds):
+        Args:
+            name (str): Fighter's name.
+            year (int, optional): Year to retrieve stats for. If None, raises an error listing available years.
+
+        Returns:
+            pd.Series: Row of the fighter for the specified year.
+
+        Raises:
+            ValueError: If the fighter is not found or the year is invalid.
+        """
+        df = self.fighters_df
+
+        # Filter by fighter name
+        fighter_rows = df[df['Fighter'] == name]
+
+        if fighter_rows.empty:
+            raise ValueError(f"❌ Fighter '{name}' not found in the dataset.")
+
+        # Ensure 'Date' is datetime
+        if not np.issubdtype(fighter_rows['Date'].dtype, np.datetime64):
+            fighter_rows = fighter_rows.copy()
+            fighter_rows['Date'] = pd.to_datetime(fighter_rows['Date'], errors='coerce')
+
+        # Check available years
+        available_years = sorted(fighter_rows['Year'].unique())
+
+        if year is None:
+            raise ValueError(
+                f"⚠️ Please specify a year for fighter '{name}'. "
+                f"Available years: {available_years}"
+            )
+
+        if year not in available_years:
+            raise ValueError(
+                f"❌ Fighter '{name}' does not have stats for year {year}. "
+                f"Available years: {available_years}"
+            )
+
+        # Get the row for the specified year (should be unique)
+        selected_row = fighter_rows[fighter_rows['Year'] == year].iloc[0]
+
+        return selected_row
+
+
+    def compute_feature_vector(self, red, blue, red_odds, blue_odds, is_five_round_fight):
         """
         Compute engineered features between two fighters, including odds.
 
@@ -41,61 +92,132 @@ class Predictor:
         Returns:
             pd.DataFrame: One-row DataFrame with feature differences, ready for model input.
         """
-        red_wins = max(red['Wins'], 1)
-        blue_wins = max(blue['Wins'], 1)
-        red_losses = max(red['Losses'], 1)
-        blue_losses = max(blue['Losses'], 1)
-
-        red_finish = (red['WinsByKO'] + red['WinsBySubmission'] + red['WinsByTKODoctorStoppage']) / red_wins
-        blue_finish = (blue['WinsByKO'] + blue['WinsBySubmission'] + blue['WinsByTKODoctorStoppage']) / blue_wins
-
-        red_win_ratio = red['Wins'] / (red_wins + red_losses)
-        blue_win_ratio = blue['Wins'] / (blue_wins + blue_losses)
-
-        red_exp_age = red['TotalRoundsFought'] / red['Age']
-        blue_exp_age = blue['TotalRoundsFought'] / blue['Age']
-
-        red_dec_wins = red[['WinsByDecisionMajority', 'WinsByDecisionSplit', 'WinsByDecisionUnanimous']].sum()
-        blue_dec_wins = blue[['WinsByDecisionMajority', 'WinsByDecisionSplit', 'WinsByDecisionUnanimous']].sum()
-
-        red_dec_rate = red_dec_wins / red_wins
-        blue_dec_rate = blue_dec_wins / blue_wins
 
         feature_vector = {
-            'FinishRateDif': blue_finish - red_finish,
-            'WinRatioDif': blue_win_ratio - red_win_ratio,
-            'ExpPerAgeDif': blue_exp_age - red_exp_age,
-            'ReachAdvantageRatio': blue['ReachCms'] / red['ReachCms'],
-            'HeightReachRatioDif': (blue['HeightCms'] / blue['ReachCms']) - (red['HeightCms'] / red['ReachCms']),
-            'WinsByDecisionDif': blue_dec_wins - red_dec_wins,
-            'DecisionRateDif': blue_dec_rate - red_dec_rate,
-            'OddsDiff': blue_odds / red_odds
+            'LoseStreakDif': blue['CurrentLoseStreak'] - red['CurrentLoseStreak'],
+            'WinStreakDif': blue['CurrentWinStreak'] - red['CurrentWinStreak'],
+            'TotalTitleBoutDif': blue['TotalTitleBouts'] - red['TotalTitleBouts'],
+            'KODif': blue['WinsByKO'] - red['WinsByKO'],
+            'SubDif': blue['WinsBySubmission']- red['WinsBySubmission'],
+            'HeightDif': blue['HeightCms'] - red['HeightCms'],
+            'ReachDif': blue['ReachCms'] - red['ReachCms'],
+            'AgeDif': blue['Age'] - red['Age'],
+            'SigStrDif': blue['AvgSigStrLanded'] - red['AvgSigStrLanded'],
+            'AvgSubAttDif': blue['AvgSubAtt'] - red['AvgSubAtt'],
+            'AvgTDDif': blue['AvgTDLanded'] - red['AvgTDLanded'],
+            'FightStance': 'Closed Stance' if blue['Stance'] == red['Stance'] else 'Open Stance',
+            'WeightGroup': blue['WeightClassMap'],
+            'FinishRateDif': blue['FinishRate'] - red['FinishRate'],
+            'WinRateDif': blue['WinRate'] - red['WinRate'],
+            'ExpPerAgeDif': blue['ExpPerAge'] - red['ExpPerAge'],
+            'HeightReachRatioDif': blue['HeightReachRatio'] - red['HeightReachRatio'],
+            'DecisionRateDif': blue['DecisionRate'] - red['DecisionRate'],
+            'IsFiveRoundFight': is_five_round_fight,
+            'OddsDif': blue_odds - red_odds
         }
         return pd.DataFrame([feature_vector])
 
-    def load_model_on_demand(self, model_name):
-        if model_name not in self.models:
-            self.models[model_name] = load_model(model_name)
-        return self.models[model_name]
+    def standardize(self, features_df):
+        num_cols_present = [col for col in self.numerical_columns if col in features_df.columns]
+        if self.scaler is not None and num_cols_present:
+            features_df[num_cols_present] = self.scaler.transform(features_df[num_cols_present])
+        return features_df
 
-    def predict(self, red_name, blue_name, red_odds, blue_odds, weightclass, model_name):
-        if red_name == blue_name:
-            raise ValueError("Red and Blue fighters must be different.")
+    def encode(self, features_df):
+        bin_cols_present = [col for col in self.ufc_data.binary_columns if col in features_df.columns]
+        multi_cols_present = [col for col in self.ufc_data.multiclass_columns if col in features_df.columns]
 
-        red = self.get_fighter_stats(red_name, weightclass)
-        blue = self.get_fighter_stats(blue_name, weightclass)
+        # Binary encoding
+        if bin_cols_present:
+            bin_encoded = pd.get_dummies(features_df[bin_cols_present], drop_first=True).astype(int)
+        else:
+            bin_encoded = pd.DataFrame(index=features_df.index)
 
-        features_df = self.compute_feature_vector(red, blue, red_odds, blue_odds)
-        model = self.load_model_on_demand(model_name)
+        # Multiclass encoding
+        if multi_cols_present:
+            multi_encoded = pd.get_dummies(features_df[multi_cols_present], drop_first=False).astype(int)
+        else:
+            multi_encoded = pd.DataFrame(index=features_df.index)
 
-        pred = model.predict(features_df)
-        prob = model.predict_proba(features_df) if hasattr(model, 'predict_proba') else None
+        # Numerical (already standardized)
+        num_encoded = features_df[[col for col in self.numerical_columns if col in features_df.columns]]
+
+        # Combine all
+        X_final = pd.concat([bin_encoded, multi_encoded, num_encoded], axis=1)
+        return X_final
+
+    def predict(self, red_id, blue_id, red_odds, blue_odds, is_five_round_fight, model_name):
+        if red_id == blue_id:
+            raise ValueError("❌ Red and Blue fighters must be different.")
+
+        red_name, red_year = red_id
+        blue_name, blue_year = blue_id
+        red = self.get_fighter_stats(red_name, red_year)
+        blue = self.get_fighter_stats(blue_name, blue_year)
+
+        if red['WeightClass'] != blue['WeightClass']:
+            raise ValueError(
+                f"❌ Fighters must be in the same weight class. "
+                f"Red: {red['WeightClass']}, Blue: {blue['WeightClass']}"
+            )
+
+        # Compute feature vector
+        features_df = self.compute_feature_vector(red, blue, red_odds, blue_odds, is_five_round_fight)
+        features_df_raw = features_df.copy()
+
+        # Standardize numerical
+        features_df = self.standardize(features_df)
+
+        # Encode categorical
+        X_final = self.encode(features_df)
+
+        # Align with model features
+        model = self.models[model_name]
+        if hasattr(model.estimator, "feature_names_in_"):
+            model_features = model.estimator.feature_names_in_
+            for col in model_features:
+                if col not in X_final.columns:
+                    X_final[col] = 0
+            X_final = X_final[model_features]
+
+        # Prediction
+        pred = model.predict(X_final)
+        try:
+            prob_array = model.predict_proba(X_final)[0]
+            prob_red, prob_blue = prob_array[0], prob_array[1]
+        except AttributeError:
+            prob_red, prob_blue = None, None
 
         result = {
             'prediction': 'Blue' if pred[0] == 1 else 'Red',
-            'probability': prob[0].tolist() if prob is not None else None,
-            'feature_vector': features_df.to_dict(orient='records')[0],
-            'red_summary': red[['Fighter', 'Record', 'WinRate', 'Stance']].to_dict(),
-            'blue_summary': blue[['Fighter', 'Record', 'WinRate', 'Stance']].to_dict()
+            'probability_red': prob_red,
+            'probability_blue': prob_blue,
+            'feature_vector': features_df_raw.to_dict(orient='records')[0],
+            'red_summary': red.to_dict(),
+            'blue_summary': blue.to_dict(),
+            'odds': (red_odds, blue_odds)
         }
         return result
+    
+    def __repr__(self):
+        num_fighters = self.fighters_df['Fighter'].nunique()
+        num_weightclasses = self.fighters_df['WeightClass'].nunique()
+        scaler_name = type(self.scaler).__name__ if self.scaler else 'None'
+        model_keys = list(self.models.keys())
+        pretty_names = [pretty_model_name.get(key, key) for key in model_keys]
+
+        return (
+            f"🥋<UFCPredictor>🥋\n"
+            f"  📊 Fighters loaded       : {num_fighters}\n"
+            f"  🏋️‍♂️ Weight classes       : {num_weightclasses}\n"
+            f"  🧠 Available models      : {pretty_names}\n"
+            f"  ⭐ Default model         : {pretty_model_name.get(self.default_model, self.default_model)}\n"
+            f"  🔢 Numerical features    : {len(self.numerical_columns)} columns\n"
+            f"  🥊 Categorical features    : {len(self.categorical_columns)} columns\n"
+            f"  🛠️  Scaler               : {scaler_name}\n"
+        )
+
+
+
+
+
