@@ -110,7 +110,6 @@ def load_all_models(include_no_odds: bool = True, verbose: bool = True) -> list:
             model_normal = UFCModel(model=load_model(name, verbose=verbose))
             model_normal.is_no_odds = False  # ✅ mark as with-odds
             model_list.append(model_normal)
-            logger.info(f"✅ Loaded model: {model_normal.name}")
         except Exception as e:
             logger.error(f"❌ Failed to load model '{name}': {e}")
 
@@ -122,7 +121,6 @@ def load_all_models(include_no_odds: bool = True, verbose: bool = True) -> list:
                 model_no_odds.name += " (no_odds)"
                 model_no_odds.is_no_odds = True  # ✅ mark as no-odds
                 model_list.append(model_no_odds)
-                logger.info(f"✅ Loaded model: {model_no_odds.name}")
             except FileNotFoundError:
                 logger.warning(f"⚠️ No '_no_odds' model found for '{name}', skipping.")
             except Exception as e:

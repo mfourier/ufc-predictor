@@ -1,26 +1,49 @@
 import pandas as pd
 import numpy as np
 from src.config import pretty_model_name
-from src.io_model import load_model
+from src.io_model import load_model, load_all_models
 from src.model import UFCModel
+from src.metrics import evaluate_metrics, evaluate_cm
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class UFCPredictor:
     """
     Predictor class to handle UFC fight predictions using trained models and fighter stats.
     """
 
-    def __init__(self, fighters_df, ufc_data):
-        self.fighters_df = fighters_df
-        self.models = {
-            name: UFCModel(load_model(name, verbose=False))
-            for name in pretty_model_name
-        }
+    def __init__(self, fighters_df, ufc_data_with_odds, 
+                ufc_data_no_odds, verbose=False):
 
-        self.default_model = 'nn_best'  # or set to your preferred default
-        self.ufc_data = ufc_data
-        self.scaler = ufc_data.get_scaler()
-        self.numerical_columns = ufc_data.numerical_columns
-        self.categorical_columns = ufc_data.categorical_columns
+        self.fighters_df = fighters_df
+        self.ufc_data_with_odds = ufc_data_with_odds
+        self.ufc_data_no_odds = ufc_data_no_odds
+        self.ufc_data = None # dynamically set in predict() for encode()
+
+        models_list = load_all_models(include_no_odds=True, verbose=verbose)
+        self.models = {m.name: m for m in models_list}
+        self.model_keys_with_odds = [m.name for m in models_list if not m.is_no_odds]
+        self.model_keys_no_odds = [m.name for m in models_list if m.is_no_odds]
+        self.default_model_with_odds = 'nn_best'
+        self.default_model_no_odds = 'xgb_best_no_odds'
+        self.evaluate_all_models(verbose=verbose)
+
+    def evaluate_all_models(self, verbose=False):
+        """
+        Evaluate all loaded models and store their metrics and confusion matrices.
+        """
+        for model in self.models.values():
+            data = self.ufc_data_no_odds if model.is_no_odds else self.ufc_data_with_odds
+            try:
+                model.metrics = evaluate_metrics(model, data, verbose=verbose)
+                model.cm = evaluate_cm(model, data)
+                if verbose:
+                    logger.info(f"✅ Evaluated model: {model.name}")
+            except Exception as e:
+                logger.error(f"❌ Failed to evaluate model {model.name}: {e}")
 
     def get_available_models(self):
         return list(self.models.keys())
@@ -78,27 +101,38 @@ class UFCPredictor:
 
         return selected_row
 
-
-    def compute_feature_vector(self, red, blue, red_odds, blue_odds, is_five_round_fight):
+    def set_active_ufc_data(self, ufc_data):
         """
-        Compute engineered features between two fighters, including odds.
+        Set the active UFCData context (used temporarily during predict).
+
+        Args:
+            ufc_data (UFCData): The UFCData object to activate.
+        """
+        self.ufc_data = ufc_data
+        self.scaler = ufc_data.get_scaler()
+        self.numerical_columns = ufc_data.numerical_columns
+        self.categorical_columns = ufc_data.categorical_columns
+
+    def compute_feature_vector(self, red, blue, is_five_round_fight, include_odds, red_odds=None, blue_odds=None):
+        """
+        Compute engineered features between two fighters, optionally including odds.
 
         Args:
             red (pd.Series): Red fighter stats.
             blue (pd.Series): Blue fighter stats.
             red_odds (float): Simulated odds for Red.
             blue_odds (float): Simulated odds for Blue.
+            include_odds (bool): Whether to include the OddsDif feature.
 
         Returns:
             pd.DataFrame: One-row DataFrame with feature differences, ready for model input.
         """
-
         feature_vector = {
             'LoseStreakDif': blue['CurrentLoseStreak'] - red['CurrentLoseStreak'],
             'WinStreakDif': blue['CurrentWinStreak'] - red['CurrentWinStreak'],
             'TotalTitleBoutDif': blue['TotalTitleBouts'] - red['TotalTitleBouts'],
             'KODif': blue['WinsByKO'] - red['WinsByKO'],
-            'SubDif': blue['WinsBySubmission']- red['WinsBySubmission'],
+            'SubDif': blue['WinsBySubmission'] - red['WinsBySubmission'],
             'HeightDif': blue['HeightCms'] - red['HeightCms'],
             'ReachDif': blue['ReachCms'] - red['ReachCms'],
             'AgeDif': blue['Age'] - red['Age'],
@@ -113,9 +147,15 @@ class UFCPredictor:
             'HeightReachRatioDif': blue['HeightReachRatio'] - red['HeightReachRatio'],
             'DecisionRateDif': blue['DecisionRate'] - red['DecisionRate'],
             'IsFiveRoundFight': is_five_round_fight,
-            'OddsDif': blue_odds - red_odds
         }
+
+        if include_odds:
+            if red_odds is None or blue_odds is None:
+                raise ValueError("❌ Odds are required but were not provided.")
+            feature_vector['OddsDif'] = blue_odds - red_odds
+
         return pd.DataFrame([feature_vector])
+
 
     def standardize(self, features_df):
         num_cols_present = [col for col in self.numerical_columns if col in features_df.columns]
@@ -146,10 +186,15 @@ class UFCPredictor:
         X_final = pd.concat([bin_encoded, multi_encoded, num_encoded], axis=1)
         return X_final
 
-    def predict(self, red_id, blue_id, red_odds, blue_odds, is_five_round_fight, model_name):
+    def predict(self, red_id, blue_id, is_five_round_fight, model_name, red_odds=None, blue_odds=None):
         if red_id == blue_id:
             raise ValueError("❌ Red and Blue fighters must be different.")
 
+        model = self.models[model_name]
+        include_odds = not model.is_no_odds
+        ufc_data = self.ufc_data_no_odds if model.is_no_odds else self.ufc_data_with_odds
+        self.set_active_ufc_data(ufc_data)
+        
         red_name, red_year = red_id
         blue_name, blue_year = blue_id
         red = self.get_fighter_stats(red_name, red_year)
@@ -162,17 +207,18 @@ class UFCPredictor:
             )
 
         # Compute feature vector
-        features_df = self.compute_feature_vector(red, blue, red_odds, blue_odds, is_five_round_fight)
+        features_df = self.compute_feature_vector(red, blue, is_five_round_fight, include_odds, red_odds, blue_odds)
         features_df_raw = features_df.copy()
 
-        # Standardize numerical
-        features_df = self.standardize(features_df)
+        # Use correct scaler and columns
+        self.scaler = ufc_data.get_scaler()
+        self.numerical_columns = ufc_data.numerical_columns
+        self.categorical_columns = ufc_data.categorical_columns
 
-        # Encode categorical
+        features_df = self.standardize(features_df)
         X_final = self.encode(features_df)
 
         # Align with model features
-        model = self.models[model_name]
         if hasattr(model.estimator, "feature_names_in_"):
             model_features = model.estimator.feature_names_in_
             for col in model_features:
@@ -195,29 +241,32 @@ class UFCPredictor:
             'feature_vector': features_df_raw.to_dict(orient='records')[0],
             'red_summary': red.to_dict(),
             'blue_summary': blue.to_dict(),
-            'odds': (red_odds, blue_odds)
         }
+
+        if include_odds:
+            result['odds'] = (red_odds, blue_odds)
+
         return result
     
     def __repr__(self):
         num_fighters = self.fighters_df['Fighter'].nunique()
         num_weightclasses = self.fighters_df['WeightClass'].nunique()
-        scaler_name = type(self.scaler).__name__ if self.scaler else 'None'
-        model_keys = list(self.models.keys())
-        pretty_names = [pretty_model_name.get(key, key) for key in model_keys]
+        scaler_name = type(self.ufc_data_with_odds.get_scaler()).__name__
+
+        models_with_odds = [m.name for m in self.models.values() if not m.is_no_odds]
+        models_no_odds = [m.name for m in self.models.values() if m.is_no_odds]
 
         return (
             f"🥋<UFCPredictor>🥋\n"
             f"  📊 Fighters loaded       : {num_fighters}\n"
             f"  🏋️‍♂️ Weight classes       : {num_weightclasses}\n"
-            f"  🧠 Available models      : {pretty_names}\n"
-            f"  ⭐ Default model         : {pretty_model_name.get(self.default_model, self.default_model)}\n"
-            f"  🔢 Numerical features    : {len(self.numerical_columns)} columns\n"
-            f"  🥊 Categorical features    : {len(self.categorical_columns)} columns\n"
+            f"  🧠 Models with odds      : {', '.join(sorted(models_with_odds))}\n"
+            f"  🚫 Models no odds        : {', '.join(sorted(models_no_odds))}\n"
+            f"  ⭐ Default with odds     : {self.default_model_with_odds}\n"
+            f"  ⭐ Default no odds       : {self.default_model_no_odds}\n"
+            f"  🔢 Numerical features    : {len(self.ufc_data_with_odds.numerical_columns)} (with odds), "
+            f"{len(self.ufc_data_no_odds.numerical_columns)} (no odds)\n"
+            f"{len(self.ufc_data_with_odds.categorical_columns)} (with odds), {len(self.ufc_data_no_odds.categorical_columns)} (no odds)\n"
             f"  🛠️  Scaler               : {scaler_name}\n"
         )
-
-
-
-
 

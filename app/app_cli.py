@@ -6,14 +6,15 @@ from rich import print, box
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
-from rich.box import ROUNDED
-from rich.prompt import Prompt, IntPrompt, FloatPrompt, Confirm
 from rich.table import Table
+from rich.prompt import IntPrompt, FloatPrompt, Confirm
 from rich.columns import Columns
 from src.io_model import load_data
 from src.predictor import UFCPredictor
 from src.helpers import print_prediction_result, print_corner_summary
-from src.config import pretty_model_name, file_model_name
+from src.config import pretty_model_name
+from src.metrics import evaluate_metrics, evaluate_cm
+import logging
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -35,6 +36,7 @@ def select_from_list(options, prompt_text):
                 console.print("[bold red]❌ Invalid selection. Please enter a valid number.[/]")
         except ValueError:
             console.print("[bold red]❌ Please enter a number.[/]")
+
 
 def select_fighter(predictor, weightclass, corner_name):
     while True:
@@ -58,10 +60,7 @@ def select_fighter(predictor, weightclass, corner_name):
 
         year = int(select_from_list([str(y) for y in years], f"👉 Select {corner_name} year"))
 
-        # Get fighter stats
         fighter_stats = predictor.get_fighter_stats(fighter, year)
-
-        # Show summary using rich version
         print_corner_summary(
             corner=fighter_stats,
             label=f"✅ Selected {corner_name} fighter: {fighter} ({year})",
@@ -71,6 +70,7 @@ def select_fighter(predictor, weightclass, corner_name):
         if Confirm.ask("✅ Confirm this selection?"):
             return fighter, year
 
+
 def get_float_input(prompt_text):
     while True:
         try:
@@ -78,46 +78,34 @@ def get_float_input(prompt_text):
         except ValueError:
             console.print("[bold red]❌ Invalid number. Please enter a valid float.[/]")
 
+
 def get_project_path():
     return os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
+
 def main():
     header_text = Text("🏆  UFC FIGHT PREDICTOR CLI  🏆", style="bold yellow", justify="center")
-
-    console.print(Panel(
-        header_text,
-        border_style="magenta",
-        box=box.DOUBLE,
-        expand=True
-    ))
+    console.print(Panel(header_text, border_style="magenta", box=box.DOUBLE, expand=True))
 
     try:
         root_dir = get_project_path()
         fighters_path = os.path.join(root_dir, 'data', 'processed', 'fighters_df.csv')
         fighters_df = pd.read_csv(fighters_path)
         ufc_data = load_data("ufc_data")
+        ufc_data_no_odds = load_data("ufc_data_no_odds")
         logger.info("✅ Data loaded successfully.")
     except Exception as e:
         logger.exception("❌ Error loading data")
         console.print(f"[bold red]❌ Error loading data: {e}[/]")
         return
 
-    predictor = UFCPredictor(fighters_df, ufc_data)
+    predictor = UFCPredictor(fighters_df, ufc_data, ufc_data_no_odds)
 
     try:
-        # Select model
-        available_models = predictor.get_available_models()
-        pretty_names = [pretty_model_name.get(code, code) for code in available_models]
-        console.rule("[bold green]Select Prediction Model[/]")
-        selected_pretty = select_from_list(pretty_names, "👉 Select model")
-        model_name = file_model_name[selected_pretty]
-
-        # Select weight class
         weightclasses = predictor.get_available_weightclasses()
         console.rule("[bold green]Select Weight Class[/]")
         weightclass = select_from_list(weightclasses, "👉 Select weight class")
 
-        # Select fighters
         red_name, red_year = select_fighter(predictor, weightclass, "🔴 Red")
         if red_name is None:
             return
@@ -130,26 +118,84 @@ def main():
             console.print("[bold red]❌ Red and Blue fighters must be different.[/]")
             return
 
-        # Five round fight
         is_five_round_fight = int(Confirm.ask("[bold cyan]👉 Is this a five round fight?[/]"))
+        include_odds = Confirm.ask("[bold cyan]👉 Do you want to include betting odds in the prediction? (improves model accuracy)[/]")
 
-        # Odds
-        red_odds = get_float_input("👉 Enter Red odds (e.g., -100)")
-        blue_odds = get_float_input("👉 Enter Blue odds (e.g., 200)")
+       # Show Model Performance Summary
+        console.rule("[bold green]Model Performance Summary[/]")
+        console.print(f"[bold yellow]Showing metrics for models: {'WITH ODDS' if include_odds else 'NO ODDS'}[/]")
 
-        # Predict
+        table = Table(show_header=True, header_style="bold magenta")
+        table.add_column("Model")
+        table.add_column("Accuracy", justify="right")
+        table.add_column("F1 Score", justify="right")
+        table.add_column("ROC AUC", justify="right")
+        table.add_column("Brier Score", justify="right")
+
+        for key, model in predictor.models.items():
+            if model.is_no_odds == (not include_odds):
+                clean_name = model.name.replace(' (no_odds)', '').strip()
+                metrics = model.metrics or {}
+                acc = metrics.get('Accuracy', None)
+                f1 = metrics.get('F1 Score', None)
+                roc_auc = metrics.get('ROC AUC', None)
+                brier = metrics.get('Brier Score', None)
+
+                acc_str = f"{acc * 100:.1f}%" if acc is not None else "N/A"
+                f1_str = f"{f1 * 100:.1f}%" if f1 is not None else "N/A"
+                roc_auc_str = f"{roc_auc * 100:.1f}%" if roc_auc is not None else "N/A"
+                brier_str = f"{brier:.3f}" if brier is not None else "N/A"
+
+                table.add_row(clean_name, acc_str, f1_str, roc_auc_str, brier_str)
+
+        console.print(table)
+
+        # Add recommendation message
+        if include_odds:
+            console.print("[bold green]💡 Recommended:[/] Neural Network is recommended for predictions with odds.")
+        else:
+            console.print("[bold green]💡 Recommended:[/] XGBoost is recommended for no-odds predictions.")
+        
+        # Show available models (pretty names only)
+        unique_pretty_names = sorted(set(pretty_model_name.values()))
+        console.rule("[bold green]Select Prediction Model[/]")
+
+        selected_pretty = select_from_list(unique_pretty_names, "👉 Select model")
+
+        # Find the correct key by matching model.name and is_no_odds
+        model_name = None
+        for key, model in predictor.models.items():
+            clean_name = model.name.replace(' (no_odds)', '').strip()
+            if clean_name == selected_pretty and model.is_no_odds == (not include_odds):
+                model_name = key
+                break
+
+        if model_name is None:
+            console.print(f"[bold red]❌ No model found for selection: {selected_pretty}[/]")
+            return
+
+        red_odds = blue_odds = None
+        if include_odds:
+            red_odds = get_float_input("👉 Enter Red odds (e.g., -100)")
+            blue_odds = get_float_input("👉 Enter Blue odds (e.g., 200)")
+
         console.print("\n[bold cyan]🔮 Making prediction...[/]")
         result = predictor.predict(
             (red_name, red_year),
             (blue_name, blue_year),
-            red_odds,
-            blue_odds,
             is_five_round_fight,
-            model_name
+            model_name,
+            red_odds,
+            blue_odds
         )
         print_prediction_result(result)
 
-        console.print(Panel("[bold green]🎉 Prediction complete! Thank you for using UFC Predictor CLI.[/]", expand=False))
+        console.print(Panel(
+            Text("🎉 Prediction complete! Run again to compare other fights or models.", style="bold green", justify="center"),
+            border_style="bold green",
+            box=box.DOUBLE,
+            expand=True
+        ))
 
     except KeyboardInterrupt:
         logger.info("👋 Exit requested by user.")
@@ -162,6 +208,7 @@ def main():
     except Exception as e:
         logger.exception("❌ Error during prediction")
         console.print(f"[bold red]❌ Error during prediction: {e}[/]")
+
 
 if __name__ == "__main__":
     main()
