@@ -128,9 +128,11 @@ class UFCPredictor:
             pd.DataFrame: One-row DataFrame with feature differences, ready for model input.
         """
         feature_vector = {
+            'BlueTotalTitleBouts': blue['TotalTitleBouts'], 
+            'RedTotalTitleBouts': red['TotalTitleBouts'],
             'LoseStreakDif': blue['CurrentLoseStreak'] - red['CurrentLoseStreak'],
             'WinStreakDif': blue['CurrentWinStreak'] - red['CurrentWinStreak'],
-            'TotalTitleBoutDif': blue['TotalTitleBouts'] - red['TotalTitleBouts'],
+            'LongestWinStreakDif': blue['LongestWinStreak'] - red['LongestWinStreak'],
             'KODif': blue['WinsByKO'] - red['WinsByKO'],
             'SubDif': blue['WinsBySubmission'] - red['WinsBySubmission'],
             'HeightDif': blue['HeightCms'] - red['HeightCms'],
@@ -139,14 +141,20 @@ class UFCPredictor:
             'SigStrDif': blue['AvgSigStrLanded'] - red['AvgSigStrLanded'],
             'AvgSubAttDif': blue['AvgSubAtt'] - red['AvgSubAtt'],
             'AvgTDDif': blue['AvgTDLanded'] - red['AvgTDLanded'],
+            'RedTotalFights': red['TotalFights'], 
+            'BlueTotalFights': blue['TotalFights'],
             'FightStance': 'Closed Stance' if blue['Stance'] == red['Stance'] else 'Open Stance',
             'WeightGroup': blue['WeightClassMap'],
-            'FinishRateDif': blue['FinishRate'] - red['FinishRate'],
-            'WinRateDif': blue['WinRate'] - red['WinRate'],
-            'ExpPerAgeDif': blue['ExpPerAge'] - red['ExpPerAge'],
+            'BlueFinishRate': blue['FinishRate'],
+            'RedFinishRate': red['FinishRate'],
+            'BlueWinRatio': blue['WinRatio'],
+            'RedWinRatio': red['WinRatio'],
             'HeightReachRatioDif': blue['HeightReachRatio'] - red['HeightReachRatio'],
-            'DecisionRateDif': blue['DecisionRate'] - red['DecisionRate'],
-            'IsFiveRoundFight': is_five_round_fight,
+            'RedKOPerFight': red['KOPerFight'],
+            'BlueKOPerFight':blue['KOPerFight'],
+            'RedSubPerFight': red['SubPerFight'],
+            'BlueSubPerFight': blue['SubPerFight'],
+            'IsFiveRoundFight': is_five_round_fight
         }
 
         if include_odds:

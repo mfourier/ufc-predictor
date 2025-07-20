@@ -118,7 +118,7 @@ def main():
             console.print("[bold red]❌ Red and Blue fighters must be different.[/]")
             return
 
-        is_five_round_fight = int(Confirm.ask("[bold cyan]👉 Is this a five round fight?[/]"))
+        is_five_round_fight = int(Confirm.ask("[bold cyan]👉 Is this a five-round fight?[/]"))
         include_odds = Confirm.ask("[bold cyan]👉 Do you want to include betting odds in the prediction? (improves model accuracy)[/]")
 
        # Show Model Performance Summary
@@ -128,6 +128,8 @@ def main():
         table = Table(show_header=True, header_style="bold magenta")
         table.add_column("Model")
         table.add_column("Accuracy", justify="right")
+        table.add_column("Precision", justify="right")
+        table.add_column("Recall", justify="right")
         table.add_column("F1 Score", justify="right")
         table.add_column("ROC AUC", justify="right")
         table.add_column("Brier Score", justify="right")
@@ -137,24 +139,29 @@ def main():
                 clean_name = model.name.replace(' (no_odds)', '').strip()
                 metrics = model.metrics or {}
                 acc = metrics.get('Accuracy', None)
+                precision = metrics.get('Precision', None)
+                recall = metrics.get('Recall', None)
                 f1 = metrics.get('F1 Score', None)
                 roc_auc = metrics.get('ROC AUC', None)
                 brier = metrics.get('Brier Score', None)
 
                 acc_str = f"{acc * 100:.1f}%" if acc is not None else "N/A"
+                precision_str = f"{precision * 100:.1f}%" if precision is not None else "N/A"
+                recall_str = f"{recall * 100:.1f}%" if recall is not None else "N/A"
                 f1_str = f"{f1 * 100:.1f}%" if f1 is not None else "N/A"
                 roc_auc_str = f"{roc_auc * 100:.1f}%" if roc_auc is not None else "N/A"
                 brier_str = f"{brier:.3f}" if brier is not None else "N/A"
 
-                table.add_row(clean_name, acc_str, f1_str, roc_auc_str, brier_str)
+                table.add_row(clean_name, acc_str, precision_str, recall_str, f1_str, roc_auc_str, brier_str)
 
         console.print(table)
 
+
         # Add recommendation message
         if include_odds:
-            console.print("[bold green]💡 Recommended:[/] Neural Network is recommended for predictions with odds.")
+            console.print("[bold green]💡 Recommended:[/] Neural Network is recommended for predictions with odds, selected for its accuracy and high F1 score, reducing bias against Blue corner predictions.")
         else:
-            console.print("[bold green]💡 Recommended:[/] XGBoost is recommended for no-odds predictions.")
+            console.print("[bold green]💡 Recommended:[/] Logistic Regression is recommended for predictions without odds, selected for its accuracy and high F1 score, reducing bias against Blue corner predictions.")
         
         # Show available models (pretty names only)
         unique_pretty_names = sorted(set(pretty_model_name.values()))

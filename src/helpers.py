@@ -137,20 +137,22 @@ def print_corner_summary_notebooks(corner, label, odds=None, color=RESET):
     lines = [
         f"{color}{BOLD}{label}{RESET}",
         f"{color}" + "-" * 70 + f"{RESET}",
-        f"Record          : {corner.get('Record', 'N/A')}",
-        f"Weight Class    : {corner.get('WeightClass', 'N/A')} | Stance: {corner.get('Stance', 'N/A')}",
+        f"Record               : {corner.get('Record', 'N/A')}",
+        f"Weight Class        : {corner.get('WeightClass', 'N/A')} | Stance: {corner.get('Stance', 'N/A')}",
     ]
 
     if odds is not None:
-        lines.append(f"Odds            : {odds}")
+        lines.append(f"Odds                 : {odds}")
 
     lines.extend([
-        f"Height          : {corner.get('HeightCms', 'N/A')} cm | Reach: {corner.get('ReachCms', 'N/A')} cm",
-        f"Age            : {corner.get('Age', 'N/A')}",
-        f"Win Rate       : {corner.get('WinRate', 0):.2f} | FinishRate: {corner.get('FinishRate', 0):.2f}",
-        f"KO Wins        : {corner.get('WinsByKO', 'N/A')} | Sub Wins: {corner.get('WinsBySubmission', 'N/A')}",
-        f"Decision Rate  : {corner.get('DecisionRate', 0):.2f} | Avg. Sig. Strike Landed: {corner.get('AvgSigStrLanded', 0):.2f}",
-        f"Avg Sub Att    : {corner.get('AvgSubAtt', 0):.2f} | Avg TD Landed: {corner.get('AvgTDLanded', 0):.2f}",
+        f"Total Fights        : {corner.get('TotalFights', 'N/A')} | Title Bouts: {corner.get('TotalTitleBouts', 'N/A')}",
+        f"Age                : {corner.get('Age', 'N/A')}",
+        f"Height             : {corner.get('HeightCms', 'N/A')} cm | Reach: {corner.get('ReachCms', 'N/A')} cm",
+        f"Height/Reach Ratio : {corner.get('HeightReachRatio', 0):.3f}",
+        f"Win Ratio          : {corner.get('WinRatio', 0):.3f} | Finish Rate: {corner.get('FinishRate', 0):.3f}",
+        f"KO per Fight       : {corner.get('KOPerFight', 0):.3f} | Sub per Fight: {corner.get('SubPerFight', 0):.3f}",
+        f"Avg Sig Str Landed : {corner.get('AvgSigStrLanded', 0):.3f}",
+        f"Avg Sub Att        : {corner.get('AvgSubAtt', 0):.3f} | Avg TD Landed: {corner.get('AvgTDLanded', 0):.3f}",
     ])
 
     for line in lines:
@@ -208,20 +210,22 @@ def print_corner_summary(corner, label, color, odds=None):
     """
 
     lines = [
-        f"[bold]Record[/]         : {corner.get('Record', 'N/A')}",
-        f"[bold]Weight Class[/]  : {corner.get('WeightClass', 'N/A')} | Stance: {corner.get('Stance', 'N/A')}",
+        f"[bold]Record[/]               : {corner.get('Record', 'N/A')}",
+        f"[bold]Weight Class[/]        : {corner.get('WeightClass', 'N/A')} | Stance: {corner.get('Stance', 'N/A')}",
     ]
 
     if odds is not None:
-        lines.append(f"[bold]Odds[/]           : {odds}")
+        lines.append(f"[bold]Odds[/]                 : {odds}")
 
     lines.extend([
-        f"[bold]Height[/]         : {corner.get('HeightCms', 'N/A')} cm | Reach: {corner.get('ReachCms', 'N/A')} cm",
-        f"[bold]Age[/]           : {corner.get('Age', 'N/A')}",
-        f"[bold]Win Rate[/]      : {corner.get('WinRate', 0):.3f} | Finish Rate: {corner.get('FinishRate', 0):.3f}",
-        f"[bold]KO Wins[/]       : {corner.get('WinsByKO', 'N/A')} | Sub Wins: {corner.get('WinsBySubmission', 'N/A')}",
-        f"[bold]Decision Rate[/] : {corner.get('DecisionRate', 0):.3f} | Avg. Sig. Strike Landed: {corner.get('AvgSigStrLanded', 0):.3f}",
-        f"[bold]Avg Sub Att[/]   : {corner.get('AvgSubAtt', 0):.3f} | Avg TD Landed: {corner.get('AvgTDLanded', 0):.3f}"
+        f"[bold]Total Fights[/]         : {corner.get('TotalFights', 'N/A')} | Title Bouts: {corner.get('TotalTitleBouts', 'N/A')}",
+        f"[bold]Age[/]                 : {corner.get('Age', 'N/A')}",
+        f"[bold]Height[/]             : {corner.get('HeightCms', 'N/A')} cm | Reach: {corner.get('ReachCms', 'N/A')} cm",
+        f"[bold]Height/Reach Ratio[/] : {corner.get('HeightReachRatio', 0):.3f}",
+        f"[bold]Win Ratio[/]          : {corner.get('WinRatio', 0):.3f} | Finish Rate: {corner.get('FinishRate', 0):.3f}",
+        f"[bold]KO per Fight[/]       : {corner.get('KOPerFight', 0):.3f} | Sub per Fight: {corner.get('SubPerFight', 0):.3f}",
+        f"[bold]Avg Sig Str Landed[/] : {corner.get('AvgSigStrLanded', 0):.3f}",
+        f"[bold]Avg Sub Att[/]        : {corner.get('AvgSubAtt', 0):.3f} | Avg TD Landed: {corner.get('AvgTDLanded', 0):.3f}"
     ])
 
     content = "\n".join(lines)
@@ -230,10 +234,11 @@ def print_corner_summary(corner, label, color, odds=None):
         content,
         title=f"{label}",
         title_align="center",
-        border_style=color  
+        border_style=color
     )
 
     console.print(panel)
+
 
 def print_prediction_result(result):
     """
@@ -281,24 +286,34 @@ def print_prediction_result(result):
         odds=blue_odds
     )
 
-    # Feature differences as a table
+    # Build table with 4 columns: Feature, Value
     table = Table(show_header=True, header_style="bold magenta")
-    table.add_column("Feature", style="dim", width=30)
-    table.add_column("Value", justify="right")
+    table.add_column("Feature", style="dim", width=20)
+    table.add_column("Value", justify="right", width=10)
+    table.add_column("Feature", style="dim", width=20)
+    table.add_column("Value", justify="right", width=10)
 
-    for k, v in features.items():
-        if k == 'IsFiveRoundFight':
-            value = 'Yes' if v == 1 else 'No'
-        elif isinstance(v, (int, float)):
-            value = f"{v:.3f}"
+    items = list(features.items())
+
+    for i in range(0, len(items), 2):
+        # Left pair
+        left_key, left_val = items[i]
+        left_val_str = 'Yes' if left_key == 'IsFiveRoundFight' and left_val == 1 else (
+            f"{left_val:.3f}" if isinstance(left_val, (int, float)) else str(left_val)
+        )
+
+        # Right pair (if exists)
+        if i + 1 < len(items):
+            right_key, right_val = items[i + 1]
+            right_val_str = 'Yes' if right_key == 'IsFiveRoundFight' and right_val == 1 else (
+                f"{right_val:.3f}" if isinstance(right_val, (int, float)) else str(right_val)
+            )
         else:
-            value = str(v)
-        table.add_row(k, value)
+            right_key, right_val_str = "", ""
+
+        table.add_row(left_key, left_val_str, right_key, right_val_str)
 
     console.print(
         Panel(table, border_style="bright_cyan", title="📊 MODEL INPUT VECTOR", expand=False),
         justify="center"
     )
-
-
-
