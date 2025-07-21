@@ -1,3 +1,5 @@
+# Author: Maximiliano Lioi | License: MIT
+
 import os
 import re
 import math

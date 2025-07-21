@@ -200,31 +200,37 @@ In summary, while machine learning models can extract useful patterns from fight
 
 ## 🧩 Feature Descriptions
 
-| Feature Name               | Description                                                                                                   |
-|---------------------------|-------------------------------------------------------------------------------------------------------------|
-| FightStance_Open Stance    | Indicator if the fight is an open-stance matchup (i.e., fighters have different stances, such as orthodox vs southpaw)                                  |
-| WeightGroup_Heavy         | Indicator if the fight involves a heavyweight fighter (Light Heavyweight or Heavyweight) (Blue vs Red).      |
-| WeightGroup_Light         | Indicator if the fight involves a lightweight fighter (Flyweight, Bantamweight, Featherweight, Lightweight) (Blue vs Red). |
-| WeightGroup_Medium        | Indicator if the fight involves a middleweight fighter (Welterweight, Middleweight) (Blue vs Red).          |
-| WeightGroup_Women        | Indicator if the fight involves a women's division fighter (Women’s Flyweight, Strawweight, Bantamweight, Featherweight) (Blue vs Red). |
-| LoseStreakDif            | Difference in current losing streaks (Blue - Red).                                                          |
-| WinStreakDif            | Difference in current winning streaks (Blue - Red).                                                        |
-| KODif                  | Difference in number of KO/TKO wins (Blue - Red).                                                           |
-| SubDif                 | Difference in number of submission wins (Blue - Red).                                                      |
-| HeightDif              | Difference in fighter height (cm, Blue - Red).                                                              |
-| AgeDif                 | Difference in fighter age (years, Blue - Red).                                                             |
-| SigStrDif             | Difference in significant strikes per minute (Blue - Red).                                                  |
-| AvgSubAttDif         | Difference in average submission attempts per 15 minutes (Blue - Red).                                       |
-| AvgTDDif            | Difference in average takedown attempts per 15 minutes (Blue - Red).                                         |
-| FinishRateDif        | Difference in finish rate (KO + Submission + TKO Doctor Stoppage wins / total fights, Blue - Red).         |
-| WinRatioDif         | Difference in win ratio (wins / [wins + losses], Blue - Red; safeguard applied for zero division).         |
-| ExpPerAgeDif        | Difference in experience per age (total rounds fought divided by age, Blue - Red).                         |
-| ReachAdvantageRatioDif | Difference in reach advantage ratio (reach in cm, Blue / Red).                                              |
-| HeightReachRatioDif  | Difference in height-to-reach ratio (height/reach, Blue - Red).                                              |
-| DecisionRateDif      | Difference in decision win rate (wins by decision / total wins, Blue - Red; safeguard applied for zero division). |
-| OddsDif             | Difference in betting odds (Blue odds - Red odds; lower values favor the fighter).                           |
+| Feature Name            | Description                                                                                           |
+|-------------------------|-----------------------------------------------------------------------------------------------------|
+| BlueTotalTitleBouts     | Number of title fights for Blue corner fighter.                                                     |
+| RedTotalTitleBouts      | Number of title fights for Red corner fighter.                                                      |
+| LoseStreakDif           | Difference in current losing streaks (Blue - Red).                                                  |
+| WinStreakDif           | Difference in current winning streaks (Blue - Red).                                                |
+| LongestWinStreakDif    | Difference in longest historical win streaks (Blue - Red).                                          |
+| KODif                  | Difference in number of KO/TKO wins (Blue - Red).                                                   |
+| SubDif                 | Difference in number of submission wins (Blue - Red).                                               |
+| HeightDif              | Difference in height (cm, Blue - Red).                                                              |
+| ReachDif               | Difference in reach (cm, Blue - Red).                                                               |
+| AgeDif                 | Difference in age (years, Blue - Red).                                                              |
+| SigStrDif             | Difference in average significant strikes landed per minute (Blue - Red).                           |
+| AvgSubAttDif         | Difference in average submission attempts per 15 minutes (Blue - Red).                               |
+| AvgTDDif            | Difference in average takedowns landed per 15 minutes (Blue - Red).                                   |
+| RedTotalFights         | Total number of fights for Red corner fighter.                                                     |
+| BlueTotalFights        | Total number of fights for Blue corner fighter.                                                    |
+| FightStance           | Indicator if fighters have same stance (`Closed Stance`) or different (`Open Stance`).             |
+| WeightGroup          | Mapped weight class group (e.g., Light, Medium, Heavy, Women).                                      |
+| BlueFinishRate        | Finish rate (KO+SUB wins / total fights) for Blue fighter.                                         |
+| RedFinishRate         | Finish rate (KO+SUB wins / total fights) for Red fighter.                                          |
+| BlueWinRatio          | Win ratio (wins / total fights) for Blue fighter.                                                  |
+| RedWinRatio           | Win ratio (wins / total fights) for Red fighter.                                                   |
+| HeightReachRatioDif  | Difference in height-to-reach ratio (height/reach, Blue - Red).                                    |
+| RedKOPerFight        | KO/TKO wins per fight for Red fighter.                                                             |
+| BlueKOPerFight       | KO/TKO wins per fight for Blue fighter.                                                            |
+| RedSubPerFight       | Submission wins per fight for Red fighter.                                                         |
+| BlueSubPerFight      | Submission wins per fight for Blue fighter.                                                        |
+| IsFiveRoundFight     | Indicator if the fight is scheduled as a five-round fight (1 = Yes, 0 = No).                       |
+| OddsDif (if used)    | Difference in betting odds (Blue odds - Red odds; lower favors the fighter).                      |
 
----
 
 <p align="center">
   <img src="img/distribution1.png" alt="Processed feature distribution part 1" width="100%"/>
@@ -279,3 +285,10 @@ Comprehensive project documentation is available in the `docs/` folder, covering
 We thank [shortlikeafox](https://github.com/shortlikeafox/ultimate_ufc_dataset) for their excellent work compiling the UFC dataset used as the foundation of this project. Their contribution made it possible to train and evaluate predictive models on historical fight outcomes.
 
 ---
+
+### Disclaimer
+
+This project is an independent work for academic and research purposes.  
+It is not affiliated with, endorsed by, or sponsored by UFC, Zuffa LLC, or any related entity.  
+All trademarks and fight data belong to their respective owners.
+

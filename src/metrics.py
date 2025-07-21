@@ -1,3 +1,5 @@
+# Author: Maximiliano Lioi | License: MIT
+
 import logging
 from typing import Optional, Union, Sequence
 import numpy as np

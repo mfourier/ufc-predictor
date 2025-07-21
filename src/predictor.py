@@ -1,3 +1,5 @@
+# Author: Maximiliano Lioi | License: MIT
+
 import pandas as pd
 import numpy as np
 from src.config import pretty_model_name
@@ -194,25 +196,29 @@ class UFCPredictor:
         X_final = pd.concat([bin_encoded, multi_encoded, num_encoded], axis=1)
         return X_final
 
-    def predict(self, red_id, blue_id, is_five_round_fight, model_name, red_odds=None, blue_odds=None):
-        if red_id == blue_id:
-            raise ValueError("❌ Red and Blue fighters must be different.")
-
+    def predict(self, red_id=None, blue_id=None, is_five_round_fight=0, model_name=None, red_odds=None, blue_odds=None, red_series=None, blue_series=None):
         model = self.models[model_name]
         include_odds = not model.is_no_odds
         ufc_data = self.ufc_data_no_odds if model.is_no_odds else self.ufc_data_with_odds
         self.set_active_ufc_data(ufc_data)
-        
-        red_name, red_year = red_id
-        blue_name, blue_year = blue_id
-        red = self.get_fighter_stats(red_name, red_year)
-        blue = self.get_fighter_stats(blue_name, blue_year)
+            
+        # Decide data source
+        if red_series is not None and blue_series is not None:
+            red = red_series
+            blue = blue_series
+        else:
+            if red_id == blue_id:
+                raise ValueError("❌ Red and Blue fighters must be different.")
+            red_name, red_year = red_id
+            blue_name, blue_year = blue_id
+            red = self.get_fighter_stats(red_name, red_year)
+            blue = self.get_fighter_stats(blue_name, blue_year)
 
-        if red['WeightClass'] != blue['WeightClass']:
-            raise ValueError(
-                f"❌ Fighters must be in the same weight class. "
-                f"Red: {red['WeightClass']}, Blue: {blue['WeightClass']}"
-            )
+            if red['WeightClass'] != blue['WeightClass']:
+                raise ValueError(
+                    f"❌ Fighters must be in the same weight class. "
+                    f"Red: {red['WeightClass']}, Blue: {blue['WeightClass']}"
+                )
 
         # Compute feature vector
         features_df = self.compute_feature_vector(red, blue, is_five_round_fight, include_odds, red_odds, blue_odds)

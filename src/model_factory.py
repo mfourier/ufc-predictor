@@ -1,3 +1,5 @@
+# Author: Maximiliano Lioi | License: MIT
+
 import logging
 import time
 from typing import Optional

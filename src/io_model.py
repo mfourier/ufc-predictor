@@ -1,3 +1,5 @@
+# Author: Maximiliano Lioi | License: MIT
+
 import os
 import pickle
 import logging

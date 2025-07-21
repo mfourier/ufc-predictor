@@ -1,3 +1,5 @@
+# Author: Maximiliano Lioi | License: MIT
+
 import pandas as pd
 import numpy as np
 import os
