@@ -359,3 +359,4 @@ timestamp,model,duration_sec,Accuracy,Precision,Recall,F1 Score,ROC AUC,Brier Sc
 2025-07-20 03:05:00,Quadratic Discriminant Analysis (without odds),2.13,0.6236,0.5684,0.4286,0.4887,0.6351,0.2313,,,,,,,,,,,,1.0,,,,,,,,,,,
 2025-07-20 03:09:55,Neural Network (without odds),294.94,0.6187,0.6917,0.1647,0.266,0.6334,0.2355,,,,,,,adam,,,adaptive,,,logistic,0.01,32.0,True,"(200,)",0.01,0.8,0.2,,,
 2025-07-20 03:10:29,XGBoost (without odds),33.54,0.6095,0.5726,0.2738,0.3705,0.6253,0.2316,,,,,,,,7.0,150.0,0.01,,,,,,,,,,,1.0,0.8,
+2025-07-20 19:16:45,K-Nearest Neighbors,5.99,0.6062,0.5465,0.3611,0.4349,0.6284,0.2393,manhattan,12.0,uniform,,,,,,,,,,,,,,,,,,,,
