@@ -12,8 +12,10 @@ from sklearn.metrics import (
     roc_auc_score,
     brier_score_loss,
     confusion_matrix,
+    balanced_accuracy_score,
+    matthews_corrcoef,
+    cohen_kappa_score,
 )
-
 from src.helpers import get_predictions
 from src.data import UFCData
 from src.model import UFCModel
@@ -22,7 +24,16 @@ from src.model import UFCModel
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-DEFAULT_METRICS = ['Accuracy', 'Precision', 'Recall', 'F1 Score', 'ROC AUC', 'Brier Score']
+# DEFAULT_METRICS = ['Accuracy', 'Precision', 'Recall', 'F1 Score', 'ROC AUC', 'Brier Score']
+DEFAULT_METRICS = [
+    'Accuracy',
+    'Balanced Accuracy',
+    'Precision Red', 'Recall Red', 'F1 Red',
+    'Precision Blue', 'Recall Blue', 'F1 Blue',
+    'ROC AUC', 'Brier Score',
+    'MCC',
+    'Kappa'
+]
 
 
 def evaluate_metrics(
@@ -92,33 +103,33 @@ def compute_metrics(
         y_proba: Optional[Union[np.ndarray, list]],
         metrics_to_compute: Sequence[str]
 ) -> dict[str, float]:
-    """
-    Compute performance metrics for classification tasks.
-
-    Args:
-        y_test (array-like): True labels.
-        y_pred (array-like): Predicted labels.
-        y_proba (array-like, optional): Probabilities or decision scores.
-        metrics_to_compute (list): List of metrics to calculate.
-
-    Returns:
-        dict[str, float]: Computed metric results.
-    """
     results: dict[str, float] = {}
 
     for metric in metrics_to_compute:
         if metric == 'Accuracy':
             results['Accuracy'] = accuracy_score(y_test, y_pred)
-        elif metric == 'Precision':
-            results['Precision'] = precision_score(y_test, y_pred, zero_division=1)
-        elif metric == 'Recall':
-            results['Recall'] = recall_score(y_test, y_pred, zero_division=1)
-        elif metric == 'F1 Score':
-            results['F1 Score'] = f1_score(y_test, y_pred, zero_division=1)
+        elif metric == 'Balanced Accuracy':
+            results['Balanced Accuracy'] = balanced_accuracy_score(y_test, y_pred)
+        elif metric == 'Precision Red':
+            results['Precision Red'] = precision_score(y_test, y_pred, pos_label=0, zero_division=1)
+        elif metric == 'Recall Red':
+            results['Recall Red'] = recall_score(y_test, y_pred, pos_label=0, zero_division=1)
+        elif metric == 'F1 Red':
+            results['F1 Red'] = f1_score(y_test, y_pred, pos_label=0, zero_division=1)
+        elif metric == 'Precision Blue':
+            results['Precision Blue'] = precision_score(y_test, y_pred, pos_label=1, zero_division=1)
+        elif metric == 'Recall Blue':
+            results['Recall Blue'] = recall_score(y_test, y_pred, pos_label=1, zero_division=1)
+        elif metric == 'F1 Blue':
+            results['F1 Blue'] = f1_score(y_test, y_pred, pos_label=1, zero_division=1)
         elif metric == 'ROC AUC' and y_proba is not None:
             results['ROC AUC'] = roc_auc_score(y_test, y_proba)
         elif metric == 'Brier Score' and y_proba is not None:
             results['Brier Score'] = brier_score_loss(y_test, y_proba)
+        elif metric == 'MCC':
+            results['MCC'] = matthews_corrcoef(y_test, y_pred)
+        elif metric == 'Kappa':
+            results['Kappa'] = cohen_kappa_score(y_test, y_pred)
         else:
             logger.warning(f"Unsupported or unavailable metric: {metric}")
 

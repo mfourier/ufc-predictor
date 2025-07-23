@@ -1,3 +1,5 @@
+# Author: Maximiliano Lioi | License: MIT
+
 import pandas as pd
 import numpy as np
 import os
@@ -11,6 +13,13 @@ from rich.table import Table
 from rich.columns import Columns
 from rich.box import ROUNDED
 from rich.text import Text
+import builtins
+plain_print = builtins.print
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 console = Console()
 
@@ -42,27 +51,6 @@ def display_model_params_table(model_params):
         })
     df = pd.DataFrame(rows)
     display(df)
-
-def print_header(text: str, color: str = "bright_magenta") -> None:
-    """
-    Print a simple ASCII-styled header box with colored text (if supported).
-
-    Args:
-        text (str): The message to print.
-        color (str): Color name from the `colors` dictionary (default: bright_magenta).
-    """
-    color_code = colors.get(color.lower(), colors["default"])
-    reset_code = colors["default"]
-
-    width = len(text) + 4  # padding of 2 on each side
-
-    top_border = f"+{'-' * width}+"
-    middle_line = f"|  {text}  |"
-    bottom_border = f"+{'-' * width}+"
-
-    print(top_border)
-    print(f"|  {color_code}{text}{reset_code}  |")
-    print(bottom_border)
 
 def get_pretty_model_name(model: object) -> str:
     """
@@ -104,7 +92,7 @@ def log_training_result(
     best_params: dict,
     metrics: dict,
     duration: float,
-    log_path: str = "../data/results/training_log.csv"
+    log_path: str = "../data/results/training_log_v2.csv"
 ) -> None:
     """
     Log the training results of a model into a cumulative CSV file.
@@ -134,7 +122,89 @@ def log_training_result(
         df = pd.DataFrame([log_entry])
 
     df.to_csv(log_path, index=False)
-    print(f"✅ Training logged to {log_path}")
+    logger.info(f"✅ Training logged to {log_path}")
+
+# ANSI color codes
+RED = "\033[91m"
+BLUE = "\033[94m"
+YELLOW = "\033[93m"
+CYAN = "\033[96m"
+BOLD = "\033[1m"
+RESET = "\033[0m"
+
+def print_corner_summary_notebooks(corner, label, odds=None, color=RESET):
+    """
+    Pretty-print summary stats for a fighter corner in notebook (with ANSI colors).
+    """
+    lines = [
+        f"{color}{BOLD}{label}{RESET}",
+        f"{color}" + "-" * 70 + f"{RESET}",
+        f"Record               : {corner.get('Record', 'N/A')}",
+        f"Weight Class        : {corner.get('WeightClass', 'N/A')} | Stance: {corner.get('Stance', 'N/A')}",
+    ]
+
+    if odds is not None:
+        lines.append(f"Odds                 : {odds}")
+
+    lines.extend([
+        f"Total Fights        : {corner.get('TotalFights', 'N/A')} | Title Bouts: {corner.get('TotalTitleBouts', 'N/A')}",
+        f"Age                : {corner.get('Age', 'N/A')}",
+        f"Height             : {corner.get('HeightCms', 'N/A')} cm | Reach: {corner.get('ReachCms', 'N/A')} cm",
+        f"Height/Reach Ratio : {corner.get('HeightReachRatio', 0):.3f}",
+        f"Win Ratio          : {corner.get('WinRatio', 0):.3f} | Finish Rate: {corner.get('FinishRate', 0):.3f}",
+        f"KO per Fight       : {corner.get('KOPerFight', 0):.3f} | Sub per Fight: {corner.get('SubPerFight', 0):.3f}",
+        f"Avg Sig Str Landed : {corner.get('AvgSigStrLanded', 0):.3f}",
+        f"Avg Sub Att        : {corner.get('AvgSubAtt', 0):.3f} | Avg TD Landed: {corner.get('AvgTDLanded', 0):.3f}",
+    ])
+
+    for line in lines:
+        plain_print(line)
+    plain_print("")
+
+def print_prediction_result_notebooks(result):
+    """
+    Pretty-print the result dictionary from UFCPredictor.predict() in notebook (with ANSI colors).
+    """
+    red = result['red_summary']
+    blue = result['blue_summary']
+    pred = result['prediction']
+    prob_red = result['probability_red']
+    prob_blue = result['probability_blue']
+    features = result['feature_vector']
+
+    red_odds, blue_odds = result.get('odds', (None, None))
+    line_sep = "-" * 70
+
+    # Header
+    plain_print(f"\n{YELLOW}{BOLD}🏆 UFC FIGHT PREDICTION RESULT{RESET}")
+    plain_print(f"{YELLOW}{line_sep}{RESET}")
+
+    print_corner_summary_notebooks(red, f"🔴 RED CORNER (Favorite): {red['Fighter']} ({red['Year']})", red_odds, RED)
+    print_corner_summary_notebooks(blue, f"🔵 BLUE CORNER (Underdog): {blue['Fighter']} ({blue['Year']})", blue_odds, BLUE)
+
+    # Prediction result
+    winner_color = BLUE if pred == 'Blue' else RED
+    winner_text = f"{winner_color}{BOLD}{'🔵 BLUE' if pred == 'Blue' else '🔴 RED'}{RESET}"
+    plain_print(f"🏅 Predicted Winner: {winner_text}")
+
+    if prob_red is not None and prob_blue is not None:
+        plain_print(f"{RED}→ Red Win Probability : {prob_red*100:.1f}%{RESET}")
+        plain_print(f"{BLUE}→ Blue Win Probability: {prob_blue*100:.1f}%{RESET}")
+
+    plain_print(f"{YELLOW}{line_sep}{RESET}")
+
+    # Feature differences
+    plain_print(f"{CYAN}📊 MODEL INPUT VECTOR:{RESET}")
+    for k, v in features.items():
+        if k == 'IsFiveRoundFight':
+            value = 'Yes' if v == 1 else 'No'
+        elif isinstance(v, (int, float)):
+            value = f"{v:.3f}"
+        else:
+            value = str(v)
+        plain_print(f"   {k:25}: {value}")
+    plain_print(f"{YELLOW}{line_sep}{RESET}\n")
+
 
 def print_corner_summary(corner, label, color, odds=None):
     """
@@ -142,20 +212,22 @@ def print_corner_summary(corner, label, color, odds=None):
     """
 
     lines = [
-        f"[bold]Record[/]         : {corner.get('Record', 'N/A')}",
-        f"[bold]Weight Class[/]  : {corner.get('WeightClass', 'N/A')} | Stance: {corner.get('Stance', 'N/A')}",
+        f"[bold]Record[/]               : {corner.get('Record', 'N/A')}",
+        f"[bold]Weight Class[/]        : {corner.get('WeightClass', 'N/A')} | Stance: {corner.get('Stance', 'N/A')}",
     ]
 
     if odds is not None:
-        lines.append(f"[bold]Odds[/]           : {odds}")
+        lines.append(f"[bold]Odds[/]                 : {odds}")
 
     lines.extend([
-        f"[bold]Height[/]         : {corner.get('HeightCms', 'N/A')} cm | Reach: {corner.get('ReachCms', 'N/A')} cm",
-        f"[bold]Age[/]           : {corner.get('Age', 'N/A')}",
-        f"[bold]Win Rate[/]      : {corner.get('WinRate', 0):.3f} | Finish Rate: {corner.get('FinishRate', 0):.3f}",
-        f"[bold]KO Wins[/]       : {corner.get('WinsByKO', 'N/A')} | Sub Wins: {corner.get('WinsBySubmission', 'N/A')}",
-        f"[bold]Decision Rate[/] : {corner.get('DecisionRate', 0):.3f} | Avg. Sig. Strike Landed: {corner.get('AvgSigStrLanded', 0):.3f}",
-        f"[bold]Avg Sub Att[/]   : {corner.get('AvgSubAtt', 0):.3f} | Avg TD Landed: {corner.get('AvgTDLanded', 0):.3f}"
+        f"[bold]Total Fights[/]         : {corner.get('TotalFights', 'N/A')} | Title Bouts: {corner.get('TotalTitleBouts', 'N/A')}",
+        f"[bold]Age[/]                 : {corner.get('Age', 'N/A')}",
+        f"[bold]Height[/]             : {corner.get('HeightCms', 'N/A')} cm | Reach: {corner.get('ReachCms', 'N/A')} cm",
+        f"[bold]Height/Reach Ratio[/] : {corner.get('HeightReachRatio', 0):.3f}",
+        f"[bold]Win Ratio[/]          : {corner.get('WinRatio', 0):.3f} | Finish Rate: {corner.get('FinishRate', 0):.3f}",
+        f"[bold]KO per Fight[/]       : {corner.get('KOPerFight', 0):.3f} | Sub per Fight: {corner.get('SubPerFight', 0):.3f}",
+        f"[bold]Avg Sig Str Landed[/] : {corner.get('AvgSigStrLanded', 0):.3f}",
+        f"[bold]Avg Sub Att[/]        : {corner.get('AvgSubAtt', 0):.3f} | Avg TD Landed: {corner.get('AvgTDLanded', 0):.3f}"
     ])
 
     content = "\n".join(lines)
@@ -164,55 +236,11 @@ def print_corner_summary(corner, label, color, odds=None):
         content,
         title=f"{label}",
         title_align="center",
-        border_style=color  
+        border_style=color
     )
 
     console.print(panel)
 
-
-def print_prediction_result_pipeline(result):
-    """
-    Pretty-print the result dictionary from UFCPredictor.predict() with detailed fighter stats and CLI colors.
-    """
-    red = result['red_summary']
-    blue = result['blue_summary']
-    pred = result['prediction']
-    prob_red = result['probability_red']
-    prob_blue = result['probability_blue']
-    features = result['feature_vector']
-    red_odds, blue_odds = result['odds']
-    line_sep = "-" * 70
-    c = colors  # alias for shorter
-
-    # Header
-    print(f"\n{c['bright_yellow']}{'🏆 UFC FIGHT PREDICTION RESULT':^70}{c['default']}")
-    print(f"{c['bright_yellow']}{line_sep}{c['default']}")
-
-    # Red corner
-    print_corner_summary(red, f"🔴 RED CORNER (Favorite): {red['Fighter']} ({red['Year']})", c['bright_red'], red_odds)
-
-    # Blue corner
-    print_corner_summary(blue, f"🔵 BLUE CORNER (Underdog): {blue['Fighter']} ({blue['Year']})", c['bright_blue'], blue_odds)
-
-    # Prediction result
-    winner_color = c['bright_blue'] if pred == 'Blue' else c['bright_red']
-    print(f"🏅 Predicted Winner: {winner_color}{'🔵 BLUE' if pred == 'Blue' else '🔴 RED'}{c['default']}")
-    if prob_red is not None and prob_blue is not None:
-        print(f" → {c['bright_red']}Red Win Probability : {prob_red*100:.1f}%{c['default']}")
-        print(f" → {c['bright_blue']}Blue Win Probability: {prob_blue*100:.1f}%{c['default']}")
-    print(f"{c['bright_yellow']}{line_sep}{c['default']}")
-
-    # Feature differences
-    print(f"{c['bright_cyan']}📊 MODEL INPUT VECTOR:{c['default']}")
-    for k, v in features.items():
-        if k == 'IsFiveRoundFight':
-            value = 'Yes' if v == 1 else 'No'
-            print(f"   {k:25}: {value}")
-        elif isinstance(v, (int, float)):
-            print(f"   {k:25}: {v: .3f}")
-        else:
-            print(f"   {k:25}: {v}")
-    print(f"{c['bright_yellow']}{line_sep}{c['default']}" + "\n")
 
 def print_prediction_result(result):
     """
@@ -224,7 +252,9 @@ def print_prediction_result(result):
     prob_red = result['probability_red']
     prob_blue = result['probability_blue']
     features = result['feature_vector']
-    red_odds, blue_odds = result['odds']
+
+    # ✅ Handle case when 'odds' might not be present
+    red_odds, blue_odds = result.get('odds', (None, None))
 
     header_text = Text("🏆 UFC FIGHT PREDICTION RESULT", style="bold yellow", justify="center")
     console.print(Panel(header_text, expand=True, border_style="magenta", box=ROUNDED))
@@ -258,23 +288,34 @@ def print_prediction_result(result):
         odds=blue_odds
     )
 
-    # Feature differences as a table
+    # Build table with 4 columns: Feature, Value
     table = Table(show_header=True, header_style="bold magenta")
-    table.add_column("Feature", style="dim", width=30)
-    table.add_column("Value", justify="right")
+    table.add_column("Feature", style="dim", width=20)
+    table.add_column("Value", justify="right", width=10)
+    table.add_column("Feature", style="dim", width=20)
+    table.add_column("Value", justify="right", width=10)
 
-    for k, v in features.items():
-        if k == 'IsFiveRoundFight':
-            value = 'Yes' if v == 1 else 'No'
-        elif isinstance(v, (int, float)):
-            value = f"{v:.3f}"
+    items = list(features.items())
+
+    for i in range(0, len(items), 2):
+        # Left pair
+        left_key, left_val = items[i]
+        left_val_str = 'Yes' if left_key == 'IsFiveRoundFight' and left_val == 1 else (
+            f"{left_val:.3f}" if isinstance(left_val, (int, float)) else str(left_val)
+        )
+
+        # Right pair (if exists)
+        if i + 1 < len(items):
+            right_key, right_val = items[i + 1]
+            right_val_str = 'Yes' if right_key == 'IsFiveRoundFight' and right_val == 1 else (
+                f"{right_val:.3f}" if isinstance(right_val, (int, float)) else str(right_val)
+            )
         else:
-            value = str(v)
-        table.add_row(k, value)
+            right_key, right_val_str = "", ""
+
+        table.add_row(left_key, left_val_str, right_key, right_val_str)
 
     console.print(
         Panel(table, border_style="bright_cyan", title="📊 MODEL INPUT VECTOR", expand=False),
         justify="center"
     )
-
-

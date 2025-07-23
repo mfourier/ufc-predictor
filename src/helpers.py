@@ -92,7 +92,7 @@ def log_training_result(
     best_params: dict,
     metrics: dict,
     duration: float,
-    log_path: str = "../data/results/training_log.csv"
+    log_path: str = "../data/results/training_log_v2.csv"
 ) -> None:
     """
     Log the training results of a model into a cumulative CSV file.
