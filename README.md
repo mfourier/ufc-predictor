@@ -99,11 +99,6 @@ The following classifiers have been integrated and carefully tuned, all coordina
 
 ```bash
 ufc-predictor/
-├── app/                              # Apps for execution and deployment
-│   ├── __init__.py                   # Common initialization (empty or shared setup)
-│   ├── app_cli.py                    # Interactive console mode
-│   ├── app_api.py                    # REST API with FastAPI
-│   └── app_streamlit.py              # Visual dashboard (optional)
 ├── app.py                            # Main entry point
 ├── data/
 │   ├── raw/                          # Original fight data
