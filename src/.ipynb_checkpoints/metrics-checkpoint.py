@@ -24,12 +24,12 @@ from src.model import UFCModel
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# DEFAULT_METRICS = ['Accuracy', 'Precision', 'Recall', 'F1 Score', 'ROC AUC', 'Brier Score']
 DEFAULT_METRICS = [
     'Accuracy',
     'Balanced Accuracy',
     'Precision Red', 'Recall Red', 'F1 Red',
     'Precision Blue', 'Recall Blue', 'F1 Blue',
+    'F1 Macro',
     'ROC AUC', 'Brier Score',
     'MCC',
     'Kappa'
@@ -122,6 +122,8 @@ def compute_metrics(
             results['Recall Blue'] = recall_score(y_test, y_pred, pos_label=1, zero_division=1)
         elif metric == 'F1 Blue':
             results['F1 Blue'] = f1_score(y_test, y_pred, pos_label=1, zero_division=1)
+        elif metric == 'F1 Macro':
+            results['F1 Macro'] = f1_score(y_test, y_pred, average='macro', zero_division=1)
         elif metric == 'ROC AUC' and y_proba is not None:
             results['ROC AUC'] = roc_auc_score(y_test, y_proba)
         elif metric == 'Brier Score' and y_proba is not None:

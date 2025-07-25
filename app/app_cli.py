@@ -16,6 +16,8 @@ from src.predictor import UFCPredictor
 from src.helpers import print_prediction_result, print_corner_summary
 from src.config import pretty_model_name
 from src.metrics import evaluate_metrics, evaluate_cm
+from rich.markdown import Markdown
+
 import logging
 
 # Setup logging
@@ -140,6 +142,7 @@ def collect_fighter_input(corner_name, weight_class, weight_class_map):
     fighter['HeightReachRatio'] = fighter['HeightCms'] / max(fighter['ReachCms'], 1)
     fighter['KOPerFight'] = fighter['WinsByKO'] / total_fights_safe
     fighter['SubPerFight'] = fighter['WinsBySubmission'] / total_fights_safe
+    fighter['Record'] = f"{fighter['Wins']}-{fighter['Losses']}-{fighter['Draws']}"
 
     return pd.Series(fighter)
 
@@ -297,41 +300,180 @@ def show_model_performance_summary(predictor, include_odds):
     console.print(f"[bold yellow]Showing metrics for models: {'WITH ODDS' if include_odds else 'NO ODDS'}[/]")
 
     table = Table(show_header=True, header_style="bold magenta")
-    table.add_column("Model")
-    table.add_column("Accuracy", justify="right")
-    table.add_column("Precision", justify="right")
-    table.add_column("Recall", justify="right")
-    table.add_column("F1 Score", justify="right")
-    table.add_column("ROC AUC", justify="right")
-    table.add_column("Brier Score", justify="right")
+
+    # Column headers based on DEFAULT_METRICS
+    columns = [
+        "Model",
+        "Accuracy",
+        "Precision Red", "Recall Red", "F1 Red",
+        "Precision Blue", "Recall Blue", "F1 Blue",
+        "F1 Macro",
+        "ROC AUC", "Brier Score",
+    ]
+    for col in columns:
+        justify = "right" if col != "Model" else "left"
+        table.add_column(col, justify=justify)
 
     for key, model in predictor.models.items():
         if model.is_no_odds == (not include_odds):
             clean_name = model.name.replace(' (no_odds)', '').strip()
             metrics = model.metrics or {}
-            acc = metrics.get('Accuracy', None)
-            precision = metrics.get('Precision', None)
-            recall = metrics.get('Recall', None)
-            f1 = metrics.get('F1 Score', None)
-            roc_auc = metrics.get('ROC AUC', None)
-            brier = metrics.get('Brier Score', None)
 
-            acc_str = f"{acc * 100:.1f}%" if acc is not None else "N/A"
-            precision_str = f"{precision * 100:.1f}%" if precision is not None else "N/A"
-            recall_str = f"{recall * 100:.1f}%" if recall is not None else "N/A"
-            f1_str = f"{f1 * 100:.1f}%" if f1 is not None else "N/A"
-            roc_auc_str = f"{roc_auc * 100:.1f}%" if roc_auc is not None else "N/A"
-            brier_str = f"{brier:.3f}" if brier is not None else "N/A"
+            def fmt(key, pct=False, decimals=4):
+                val = metrics.get(key, None)
+                if val is None:
+                    return "N/A"
+                if pct:
+                    return f"{val * 100:.1f}%"
+                return f"{val:.{decimals}f}"
 
-            table.add_row(clean_name, acc_str, precision_str, recall_str, f1_str, roc_auc_str, brier_str)
+            row = [
+                clean_name,
+                fmt("Accuracy", pct=True),
+                fmt("Precision Red", pct=True),
+                fmt("Recall Red", pct=True),
+                fmt("F1 Red", pct=True),
+                fmt("Precision Blue", pct=True),
+                fmt("Recall Blue", pct=True),
+                fmt("F1 Blue", pct=True),
+                fmt("F1 Macro", pct=True),
+                fmt("ROC AUC", pct=True),
+                fmt("Brier Score", pct=False, decimals=3),
+            ]
+
+            table.add_row(*row)
 
     console.print(table)
 
-    # Add recommendation message
+    # Recommendation block
     if include_odds:
-        console.print("[bold green]💡 Recommended:[/] Neural Network is recommended for predictions with odds, selected for its accuracy and high F1 score, reducing bias against Blue corner predictions.")
+        console.print("[bold green]💡 Recommended:[/] Support Vector Machine is recommended for predictions with odds, selected for its accuracy and high F1 Macro and ROC AUC score, reducing bias against Blue corner predictions.")
+        console.print(f"[bold cyan]📘 Tip:[/] Use 'View Documentation' to learn about each model.\n")
     else:
-        console.print("[bold green]💡 Recommended:[/] Logistic Regression is recommended for predictions without odds, selected for its accuracy and high F1 score, reducing bias against Blue corner predictions.")
+        console.print("[bold green]💡 Recommended:[/] Logistic Regression is recommended for predictions without odds, selected for its accuracy and high F1 Macro and ROC AUC score, reducing bias against Blue corner predictions.")
+        console.print(f"[bold cyan]📘 Tip:[/] Use 'View Documentation' to learn about each model.\n")
+
+
+def view_readme():
+    root_dir = get_project_path()
+    readme_path = os.path.join(root_dir, "README.md")
+
+    if not os.path.exists(readme_path):
+        console.print("[bold red]❌ README.md not found in project root.[/]")
+        return
+
+    try:
+        with open(readme_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        console.rule("[bold green]📘 PROJECT README[/]")
+        console.print("[bold yellow]⚠️ Note: LaTeX formulas ($...$) and some Markdown may not render perfectly in terminal.[/]\n")
+        console.print(Markdown(content), overflow="ignore", soft_wrap=True)
+        console.rule()
+        console.print("Press Enter to return to main menu...")
+        input()
+
+    except Exception as e:
+        console.print(f"[bold red]❌ Failed to read README.md: {e}[/]")
+
+
+def view_documentation():
+    docs_dir = os.path.join(get_project_path(), 'docs')
+    md_files = [f for f in os.listdir(docs_dir) if f.endswith('.md')]
+
+    if not md_files:
+        console.print("[bold red]❌ No Markdown documentation files found in /docs[/]")
+        return
+
+    pretty_map = {
+        'adaboost.md': 'Adaboost',
+        'extra_trees.md': 'Extra Trees',
+        'gradient_boosting.md': 'Gradient Boosting',
+        'hyperparameter_tuning.md': 'Hyperparameters Tuning',
+        'knn.md': 'K-Nearest Neighbors',
+        'logistic_regression.md': 'Logistic Regression',
+        'naive_bayes.md': 'Naive Bayes',
+        'neural_network.md': 'Neural Network',
+        'qda.md': 'Quadratic Discriminant Analysis',
+        'random_forest.md': 'Random Forest',
+        'svm.md': 'Support Vector Machine',
+        'xgboost.md': 'XGBoost',
+    }
+
+    # Filtrar solo los archivos presentes
+    options = [pretty_map[f] for f in md_files if f in pretty_map]
+    reverse_map = {v: k for k, v in pretty_map.items()}
+
+    selected_pretty = select_from_list(options, "📚 Select documentation file to view")
+    if selected_pretty is None:
+        return
+
+    selected_file = reverse_map[selected_pretty]
+    path = os.path.join(docs_dir, selected_file)
+
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            md_content = f.read()
+
+        console.rule(f"[bold green]📄 {selected_pretty}[/]")
+        console.print("[bold yellow]⚠️ Note: LaTeX formulas ($...$) will not be rendered visually in terminal.[/]\n")
+        console.print(Markdown(md_content), overflow="ignore", soft_wrap=True)
+        console.rule()
+        input("\nPress Enter to return to main menu...")
+
+    except Exception as e:
+        console.print(f"[bold red]❌ Failed to read {selected_file}: {e}[/]")
+
+
+def show_model_summary_metrics(predictor):
+    console.rule("[bold magenta]📊 MODEL SUMMARY METRICS[/]")
+
+    for odds_type, label in [(False, "WITHOUT ODDS"), (True, "WITH ODDS")]:
+        console.print(f"\n[bold green]🧠 Models {label}[/]")
+        table = Table(show_header=True, header_style="bold blue")
+
+        columns = [
+            "Model", "Accuracy", "Precision Red", "Recall Red", "F1 Red",
+            "Precision Blue", "Recall Blue", "F1 Blue", "F1 Macro",
+            "ROC AUC", "Brier Score"
+        ]
+        for col in columns:
+            justify = "right" if col != "Model" else "left"
+            table.add_column(col, justify=justify)
+
+        for key, model in predictor.models.items():
+            if model.is_no_odds == (not odds_type):
+                name = model.name.replace(" (no_odds)", "").strip()
+                metrics = model.metrics or {}
+
+                def fmt(key, pct=False, decimals=4):
+                    val = metrics.get(key, None)
+                    if val is None:
+                        return "N/A"
+                    return f"{val * 100:.1f}%" if pct else f"{val:.{decimals}f}"
+
+                table.add_row(
+                    name,
+                    fmt("Accuracy", pct=True),
+                    fmt("Precision Red", pct=True),
+                    fmt("Recall Red", pct=True),
+                    fmt("F1 Red", pct=True),
+                    fmt("Precision Blue", pct=True),
+                    fmt("Recall Blue", pct=True),
+                    fmt("F1 Blue", pct=True),
+                    fmt("F1 Macro", pct=True),
+                    fmt("ROC AUC", pct=True),
+                    fmt("Brier Score", pct=False, decimals=3)
+                )
+
+        console.print(table)
+    console.print("[bold green]💡 Recommended:[/] Support Vector Machine is recommended for predictions with odds, selected for its accuracy and high F1 Macro and ROC AUC score, reducing bias against Blue corner predictions.")
+    console.print("[bold green]💡 Recommended:[/] Logistic Regression is recommended for predictions without odds, selected for its accuracy and high F1 Macro and ROC AUC score, reducing bias against Blue corner predictions.")
+    console.print(f"[bold cyan]📘 Tip:[/] Use 'View Documentation' to learn about each model.\n")
+    input("\nPress Enter to return to the main menu...")
+
+def clear_console():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 def get_int_input(prompt_text, default=None):
     while True:
@@ -360,9 +502,12 @@ def get_project_path():
 def main():
     title = Text("🏆 UFC FIGHT PREDICTOR CLI 🏆", style="bold yellow", justify="center")
     subtitle = Text("Predict your fights using ML! 💥🥋", style="italic cyan", justify="center")
-    banner_text = title + "\n" + subtitle
+    author = Text("Author: Maximiliano Lioi (2025)", style="dim white", justify="center")
 
-    console.print("[bold green]🥊 Welcome to UFC Fight Predictor 🥊[/]\n")
+    banner_text = title + "\n" + subtitle + "\n" + author
+
+
+    console.print("[bold green]🥊 Welcome to UFC Fight Predictor v1.0 🥊[/]\n")
     console.print("[bold green]📦 Loading data and models, please wait...[/]\n")
 
     try:
@@ -391,18 +536,28 @@ def main():
             ))
 
             mode = select_from_list([
-            "Simulate UFC Fight",
-            "Simulate Custom Fight",
-            "Exit"
+                "Simulate UFC Fight",
+                "Simulate Custom Fight",
+                "View Documentation",
+                "Model Summary Metrics",
+                "View Project README",
+                "Exit"
             ], "👉 Select Mode", allow_back=False)
 
             if mode == "Simulate UFC Fight":
                 simulate_ufc_fight(predictor)
             elif mode == "Simulate Custom Fight":
                 simulate_custom_fight(predictor)
+            elif mode == "View Documentation":
+                view_documentation()
+            elif mode == "Model Summary Metrics":
+                show_model_summary_metrics(predictor)
+            elif mode == "View Project README":
+                  view_readme()
             else:
                 console.print("\n[bold yellow]👋 Exit requested. Goodbye![/]")
                 sys.exit(0)
+
     except KeyboardInterrupt:
         logger.info("👋 Exit requested by user.")
         console.print("\n[bold yellow]👋 Exit requested. Goodbye![/]")
