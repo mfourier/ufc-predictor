@@ -17,7 +17,7 @@ from src.helpers import print_prediction_result, print_corner_summary
 from src.config import pretty_model_name
 from src.metrics import evaluate_metrics, evaluate_cm
 from rich.markdown import Markdown
-
+from rich.box import DOUBLE
 import logging
 
 # Setup logging
@@ -34,14 +34,17 @@ def simulate_ufc_fight(predictor):
     console.rule("[bold green]Select Weight Class[/]")
     weightclass = select_from_list(weightclasses, "👉 Select weight class")
     if weightclass is None:
+        clear_console()
         return  
     
     red_name, red_year = select_fighter(predictor, weightclass, "🔴 Red")
     if red_name is None:
+        clear_console()
         return
 
     blue_name, blue_year = select_fighter(predictor, weightclass, "🔵 Blue")
     if blue_name is None:
+        clear_console()
         return
 
     if red_name == blue_name and red_year == blue_year:
@@ -172,10 +175,12 @@ def simulate_custom_fight(predictor):
 
     red = collect_fighter_input("🔴 Red", weight_class, weight_class_map)
     if red is None:
+        clear_console()
         return
 
     blue = collect_fighter_input("🔵 Blue", weight_class, weight_class_map)
     if blue is None:
+        clear_console()
         return
 
     fight_stance = 'Closed Stance' if red['Stance'] == blue['Stance'] else 'Open Stance'
@@ -281,6 +286,7 @@ def select_fighter(predictor, weightclass, corner_name):
 
         year_str = select_from_list([str(y) for y in years], f"👉 Select {corner_name} year")
         if year_str is None:
+            clear_console()
             return None, None
         year = int(year_str)
 
@@ -350,7 +356,7 @@ def show_model_performance_summary(predictor, include_odds):
         console.print("[bold green]💡 Recommended:[/] Support Vector Machine is recommended for predictions with odds, selected for its accuracy and high F1 Macro and ROC AUC score, reducing bias against Blue corner predictions.")
         console.print(f"[bold cyan]📘 Tip:[/] Use 'View Documentation' to learn about each model.\n")
     else:
-        console.print("[bold green]💡 Recommended:[/] Logistic Regression is recommended for predictions without odds, selected for its accuracy and high F1 Macro and ROC AUC score, reducing bias against Blue corner predictions.")
+        console.print("[bold green]💡 Recommended:[/] Neural Network is recommended for predictions without odds, selected for its accuracy and high F1 Macro and ROC AUC score, reducing bias against Blue corner predictions.")
         console.print(f"[bold cyan]📘 Tip:[/] Use 'View Documentation' to learn about each model.\n")
 
 
@@ -370,7 +376,7 @@ def view_readme():
         console.print("[bold yellow]⚠️ Note: LaTeX formulas ($...$) and some Markdown may not render perfectly in terminal.[/]\n")
         console.print(Markdown(content), overflow="ignore", soft_wrap=True)
         console.rule()
-        console.print("Press Enter to return to main menu...")
+        console.print("👉Press Enter to return to main menu...")
         input()
         clear_console()
     except Exception as e:
@@ -419,7 +425,7 @@ def view_documentation():
         console.print("[bold yellow]⚠️ Note: LaTeX formulas ($...$) will not be rendered visually in terminal.[/]\n")
         console.print(Markdown(md_content), overflow="ignore", soft_wrap=True)
         console.rule()
-        input("\nPress Enter to return to main menu...")
+        input("\n👉Press Enter to return to main menu...")
         clear_console()
     except Exception as e:
         console.print(f"[bold red]❌ Failed to read {selected_file}: {e}[/]")
@@ -470,7 +476,7 @@ def show_model_summary_metrics(predictor):
     console.print("[bold green]💡 Recommended:[/] Support Vector Machine is recommended for predictions with odds, selected for its accuracy and high F1 Macro and ROC AUC score, reducing bias against Blue corner predictions.")
     console.print("[bold green]💡 Recommended:[/] Logistic Regression is recommended for predictions without odds, selected for its accuracy and high F1 Macro and ROC AUC score, reducing bias against Blue corner predictions.")
     console.print(f"[bold cyan]📘 Tip:[/] Use 'View Documentation' to learn about each model.\n")
-    input("\nPress Enter to return to the main menu...")
+    input("\n👉Press Enter to return to the main menu...")
     clear_console()
 
 def clear_console():
@@ -500,78 +506,75 @@ def get_float_input(prompt_text):
 def get_project_path():
     return os.path.abspath(os.path.dirname(__file__))
 
-def main():
+def load_all_assets():
+    try:
+        root_dir = os.path.abspath(os.path.dirname(__file__))
+        data_path = os.path.join(root_dir, 'data', 'processed', 'fighters_df.csv')
+        fighters_df = pd.read_csv(data_path)
+        ufc_data = load_data("ufc_data")
+        ufc_data_no_odds = load_data("ufc_data_no_odds")
+        logger.info("✅ All data successfully loaded.")
+        return fighters_df, ufc_data, ufc_data_no_odds
+    except Exception as e:
+        logger.exception("❌ Failed to load data")
+        console.print(f"[bold red]❌ Error loading data: {e}[/]")
+        sys.exit(1)
+
+
+def main_menu():
     title = Text("🏆 UFC FIGHT PREDICTOR CLI 🏆", style="bold yellow", justify="center")
     subtitle = Text("Predict your fights using ML! 💥🥋", style="italic cyan", justify="center")
     author = Text("Author: Maximiliano Lioi (2025)", style="dim white", justify="center")
+    banner = title + "\n" + subtitle + "\n" + author
 
-    banner_text = title + "\n" + subtitle + "\n" + author
+    console.print(Panel(banner, border_style="magenta", box=DOUBLE, padding=(1, 4), expand=True))
 
+    options = [
+        "Simulate UFC Fight",
+        "Simulate Custom Fight",
+        "View Documentation",
+        "Model Summary Metrics",
+        "View Project README",
+        "Exit"
+    ]
+    return select_from_list(options, "👉 Select Mode", allow_back=False)
 
-    console.print("[bold green]🥊 Welcome to UFC Fight Predictor v1.0 🥊[/]\n")
-    console.print("[bold green]📦 Loading data and models, please wait...[/]\n")
+def main():
+    console.print("[bold green]🥋 Welcome to UFC Fight Predictor v1.0 🥋\n")
+    console.print("[bold green]📦 Loading data and models, please wait...\n")
 
-    try:
-        root_dir = get_project_path()
-        fighters_path = os.path.join(root_dir, 'data', 'processed', 'fighters_df.csv')
-        fighters_df = pd.read_csv(fighters_path)
-        ufc_data = load_data("ufc_data")
-        ufc_data_no_odds = load_data("ufc_data_no_odds")
-        logger.info("✅ Data loaded successfully.")
-        console.print("[bold green]✅ Data and models loaded successfully! Ready to go.\n")
-    except Exception as e:
-        logger.exception("❌ Error loading data")
-        console.print(f"[bold red]❌ Error loading data: {e}[/]")
-        return
-
+    fighters_df, ufc_data, ufc_data_no_odds = load_all_assets()
     predictor = UFCPredictor(fighters_df, ufc_data, ufc_data_no_odds)
     clear_console()
-    
-    try:
-        while True:
-            console.print(Panel(
-                banner_text,
-                border_style="magenta",
-                box=box.DOUBLE,
-                padding=(1, 4),
-                expand=True 
-            ))
 
-            mode = select_from_list([
-                "Simulate UFC Fight",
-                "Simulate Custom Fight",
-                "View Documentation",
-                "Model Summary Metrics",
-                "View Project README",
-                "Exit"
-            ], "👉 Select Mode", allow_back=False)
-
-            if mode == "Simulate UFC Fight":
+    while True:
+        try:
+            choice = main_menu()
+            if choice == "Simulate UFC Fight":
                 simulate_ufc_fight(predictor)
-            elif mode == "Simulate Custom Fight":
+            elif choice == "Simulate Custom Fight":
                 simulate_custom_fight(predictor)
-            elif mode == "View Documentation":
+            elif choice == "View Documentation":
                 view_documentation()
-            elif mode == "Model Summary Metrics":
+            elif choice == "Model Summary Metrics":
                 show_model_summary_metrics(predictor)
-            elif mode == "View Project README":
-                  view_readme()
+            elif choice == "View Project README":
+                view_readme()
             else:
                 console.print("\n[bold yellow]👋 Exit requested. Goodbye![/]")
                 sys.exit(0)
 
-    except KeyboardInterrupt:
-        logger.info("👋 Exit requested by user.")
-        console.print("\n[bold yellow]👋 Exit requested. Goodbye![/]")
-        sys.exit(0)
-    except EOFError:
-        logger.info("👋 End of input detected.")
-        console.print("\n[bold yellow]👋 End of input detected. Goodbye![/]")
-        sys.exit(0)
-    except Exception as e:
-        logger.exception("❌ Error during prediction")
-        console.print(f"[bold red]❌ Error during prediction: {e}[/]")
-
+        except KeyboardInterrupt:
+            logger.info("👋 Exit requested by user.")
+            console.print("\n[bold yellow]👋 Exit requested. Goodbye![/]")
+            sys.exit(0)
+        except EOFError:
+            logger.info("👋 End of input detected.")
+            console.print("\n[bold yellow]👋 End of input detected. Goodbye![/]")
+            sys.exit(0)
+        except Exception as e:
+            logger.exception("❌ Unexpected error during main loop")
+            console.print(f"[bold red]❌ Unexpected error: {e}[/]")
 
 if __name__ == "__main__":
     main()
