@@ -174,6 +174,7 @@ def simulate_custom_fight(predictor):
     weight_classes = list(weight_class_map.keys())
     weight_class = select_from_list(weight_classes, "👉 Select Weight Class")
     if weight_class is None:
+        clear_console()
         return
 
     red = collect_fighter_input("🔴 Red", weight_class, weight_class_map)
