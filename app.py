@@ -406,7 +406,6 @@ def view_documentation():
         'xgboost.md': 'XGBoost',
     }
 
-    # Filtrar solo los archivos presentes
     options = [pretty_map[f] for f in md_files if f in pretty_map]
     reverse_map = {v: k for k, v in pretty_map.items()}
 
