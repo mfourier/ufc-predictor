@@ -47,14 +47,18 @@ def simulate_ufc_fight(predictor):
 
     if red_name == blue_name and red_year == blue_year:
         console.print("[bold red]❌ Red and Blue fighters must be different.[/]")
+        clear_console()
         return
-
+    
+    console.rule(f"[bold green]💥Fighters Selection Completed💥[/]")
     is_five_round = int(Confirm.ask("👉 Is this a five-round fight?"))
     include_odds = Confirm.ask("👉 Do you want to include betting odds in the prediction?")
 
+    clear_console()
     show_model_performance_summary(predictor, include_odds)
     model_name = select_prediction_model(predictor, include_odds)
     if model_name is None:
+        clear_console()
         return
 
     red_odds = blue_odds = None
@@ -62,6 +66,7 @@ def simulate_ufc_fight(predictor):
         red_odds = get_float_input("👉 Enter Red odds (e.g., -100)")
         blue_odds = get_float_input("👉 Enter Blue odds (e.g., 200)")
 
+    clear_console()
     console.print("\n[bold cyan]🔮 Making prediction...[/]")
     result = predictor.predict(
         red_id=(red_name, red_year),
@@ -184,12 +189,14 @@ def simulate_custom_fight(predictor):
     fight_stance = 'Closed Stance' if red['Stance'] == blue['Stance'] else 'Open Stance'
     red['Stance'] = blue['Stance'] = fight_stance
 
+    console.rule(f"[bold green]💥Fighters Selection Completed💥[/]")
     is_five_round = int(Confirm.ask("👉 Is this a five-round fight?"))
     include_odds = Confirm.ask("👉 Do you want to include betting odds in the prediction?")
 
     show_model_performance_summary(predictor, include_odds)
     model_name = select_prediction_model(predictor, include_odds)
     if model_name is None:
+        clear_console()
         return
 
     red_odds = blue_odds = None
@@ -200,7 +207,8 @@ def simulate_custom_fight(predictor):
         blue_odds = get_float_input("👉 Enter Blue odds (e.g., 200)")
         if blue_odds is None:
             return
-
+        
+    clear_console()
     console.print("\n[bold cyan]🔮 Making prediction...[/]")
     result = predictor.predict(
         red_series=red,
@@ -262,6 +270,7 @@ def select_from_list(options, prompt_text, allow_back=True):
 
 def select_fighter(predictor, weightclass, corner_name):
     while True:
+        clear_console()
         fighters = predictor.get_fighters_by_weightclass(weightclass)
         console.rule(f"[bold cyan]{corner_name} Available Fighters[/]")
         fighter = select_from_list(fighters, f"👉 Select {corner_name} fighter")
@@ -289,6 +298,7 @@ def select_fighter(predictor, weightclass, corner_name):
         year = int(year_str)
 
         fighter_stats = predictor.get_fighter_stats(fighter, year)
+        
         print_corner_summary(
             corner=fighter_stats,
             label=f"✅ Selected {corner_name} fighter: {fighter} ({year})",
