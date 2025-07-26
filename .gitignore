@@ -1,0 +1,22 @@
+# 🧹 Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# 📓 Jupyter notebooks checkpoints
+**/.ipynb_checkpoints/
+
+# 🧪 Archivos temporales o swap
+*.swp
+*.bak
+*~
+
+# 💻 Archivos de entorno o configuración personal
+.env
+.vscode/
+.idea/
+
+# 🧱 Archivos de sistema
+.DS_Store
+Thumbs.db
+
