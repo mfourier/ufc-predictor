@@ -525,8 +525,7 @@ def main():
         return
 
     predictor = UFCPredictor(fighters_df, ufc_data, ufc_data_no_odds)
-    clear_console()
-    
+
     try:
         while True:
             console.print(Panel(
