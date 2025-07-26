@@ -9,16 +9,14 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 from rich.table import Table
-from rich.prompt import IntPrompt, FloatPrompt, Confirm
+from rich.prompt import Confirm
 from rich.columns import Columns
 from src.io_model import load_data
 from src.predictor import UFCPredictor
 from src.helpers import print_prediction_result, print_corner_summary
 from src.config import pretty_model_name
-from src.metrics import evaluate_metrics, evaluate_cm
 from rich.markdown import Markdown
 from rich.box import DOUBLE
-import logging
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -549,6 +547,9 @@ def main():
     while True:
         try:
             choice = main_menu()
+            if choice is None:
+                logger.warning("❌ No valid choice received. Exiting.")
+                break
             if choice == "Simulate UFC Fight":
                 simulate_ufc_fight(predictor)
             elif choice == "Simulate Custom Fight":
