@@ -1,6 +1,4 @@
 """
-config.py
-
 Configuration module for the UFC Fight Predictor project.
 
 This file centralizes all model-related configuration for the machine learning pipeline, 
