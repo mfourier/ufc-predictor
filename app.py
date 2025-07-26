@@ -473,7 +473,7 @@ def show_model_summary_metrics(predictor):
 
         console.print(table)
     console.print("[bold green]💡 Recommended:[/] Support Vector Machine is recommended for predictions with odds, selected for its accuracy and high F1 Macro and ROC AUC score, reducing bias against Blue corner predictions.")
-    console.print("[bold green]💡 Recommended:[/] Logistic Regression is recommended for predictions without odds, selected for its accuracy and high F1 Macro and ROC AUC score, reducing bias against Blue corner predictions.")
+    console.print("[bold green]💡 Recommended:[/] Neural Network is recommended for predictions without odds, selected for its accuracy and high F1 Macro and ROC AUC score, reducing bias against Blue corner predictions.")
     console.print(f"[bold cyan]📘 Tip:[/] Use 'View Documentation' to learn about each model.\n")
     input("\n👉Press Enter to return to the main menu...")
     clear_console()
