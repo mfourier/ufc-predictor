@@ -1,12 +1,42 @@
 <h1 align="center">
-  🥋 UFC Fight Predictor Model
+  🥋 UFC Fight Predictor
   <img src="img/ufc_logo.png" width="70" style="vertical-align: middle; margin-left: 10px;" />
 </h1>
 
+<p align="center">
+  <img src="https://img.shields.io/badge/python-3.11-blue"/>
+  <img src="https://img.shields.io/badge/license-MIT-blue"/>
+  <img src="https://img.shields.io/badge/docker-ready-blue"/>
+</p>
+
 ## 📝 Project Summary
-UFC Fight Predictor is a machine learning pipeline developed to predict the outcomes of UFC fights by combining fighter statistics, performance history, and betting market signals. Integrating classical models, boosted ensembles, and neural networks, the project achieves an accuracy of approximately 66% — a level that reflects the inherent unpredictability and stochastic nature of MMA competition. The pipeline strikes a balance between predictive performance and interpretability, providing valuable insights into the key factors that influence fight outcomes.
+UFC Fight Predictor is a machine learning pipeline developed to predict the outcomes of UFC fights by combining fighter statistics, performance history, and betting market signals. Integrating classical models, boosted ensembles, and neural networks, the project achieves an accuracy around 66% — which aligns with the inherent unpredictability and stochastic nature of MMA competition. The pipeline strikes a balance between predictive performance and interpretability, providing valuable insights into the key factors that influence fight outcomes.
 
 ---
+
+## ⚡ Quick Start with UFC Fight Predictor CLI
+🐧 For Unix/macOS:
+```bash
+git clone https://github.com/mfourier/ufc-predictor.git
+cd ufc-predictor
+chmod +x ufc.sh
+./ufc.sh
+```
+🪟 For Windows:
+```bash
+ufc.bat
+```
+> Launches the Dockerized CLI App to simulate UFC fights and test models.
+
+<p align="center">
+  <img src="img/ufc_sh.gif" alt="UFC CLI Demo" width="65%" />
+</p>
+
+---
+<p align="center">
+  <img src="img/ufc_cli.png" alt="UFC CLI" width="45%"/>
+  <img src="img/ufc_prediction.png" alt="UFC Prediction" width="45%"/>
+</p>
 
 ## 🎯 Objective
 
@@ -18,14 +48,11 @@ By transforming fighter-level data into **relative feature vectors**, the model 
 
 ## 📊 Dataset Description
 
-The dataset includes detailed information on historical UFC fights. Each row represents a single bout with features combining:
+The dataset includes detailed information on historical UFC fights from 2010 to 2024. Each row represents a single bout, with features capturing the relative differences between both fighters in terms of physical attributes, performance history, and betting market data (odds).
 
 - 🧍‍♂️ **Numerical attributes** (e.g., height, reach, age)
-- 🎯 **Categorical encodings** (fighting style: ortodox, southpaw, switch, fight stance: open, closed, weight classes.)
+- 🎯 **Categorical encodings** (e.g., fighting style: orthodox, southpaw, switch; fight stance: open, closed; weight classes)
 - 📈 **Performance indicators** (e.g., striking landed per minute, average takedown attempts)
-
-All features are encoded *relatively*:
-$$x = fighter_{blue} - fighter_{red}$$
 
 ### Key Feature Groups
 
@@ -128,56 +155,87 @@ ufc-predictor/
 
 ---
 
-## 🔬 Noise-Based Feature Selection
+## 🧠 Feature Importance Analysis (With vs. Without Odds)
 
-To improve feature selection, we conducted a **Noise-Based Feature Selection** experiment. A synthetic random feature (`Random_Noise`) was added to the dataset using `UFCData.add_random_feature()`, and feature importance was analyzed across multiple models. Any real feature showing lower importance than the random column was considered uninformative and a candidate for exclusion.
+A comparative analysis of feature importance across models trained **with** and **without** betting odds reveals key shifts in predictive behavior.
 
-This iterative process helped refine the feature set, striking a balance between **model complexity, interpretability, and predictive performance**.  
-**Below: on the left, feature importances with the random noise benchmark; on the right, after applying several feature engineering refinements, with the random noise column removed:**
+### 🔍 Models Trained Without Odds
 
-<p align="center">
-  <img src="img/Noise-based-feature-selection-part1.png" alt="Feature importances with random noise benchmark" width="45%"/>
-  <img src="img/Noise-based-feature-selection-part5.png" alt="Feature importances after feature engineering tweaks" width="45%"/>
-</p>
+Models that exclude betting odds rely more heavily on **physical attributes** and **technical performance metrics** to make predictions.
+
+- **Top recurring features:**
+  - `ReachDif`, `HeightReachRatioDif`, `AgeDif`, `AvgTDDif`, `SigStrDif`
+  - Indicators of experience and momentum: `RedTotalFights`, `WinStreakDif`, `RedWinRatio`
+
+- **Key observations:**
+  - Linear models like Logistic Regression and SVM rank `ReachDif` and `HeightReachRatioDif` among the most important coefficients.
+  - Tree-based models (Random Forest, Extra Trees, Gradient Boosting) distribute importance across age, striking, grappling, and fight history.
+  - Features related to underdog performance (e.g., `BlueFinishRate`, `BlueKOPerFight`) appear less prominently, reflecting the difficulty of modeling surprise outcomes without external priors.
 
 ---
 
-### 🧠 Feature Importance Analysis
+### 🔍 Models Trained With Odds
 
-The final feature importance analysis, aggregated across all models, reveals consistent patterns:
+Once the feature `OddsDif` is introduced (capturing the difference in betting odds between fighters), the importance landscape changes dramatically.
 
-- **Top features:**  
-  `OddsDif` stands out as the most influential feature across all models, both linear and tree-based, reflecting the predictive strength embedded in betting odds and the prior knowledge priced by the market. `WinRatioDif` and `SigStrDif` follow as key secondary features, capturing fighter performance history and striking effectiveness.
+- **Top feature across all models:**
+  - ✅ `OddsDif` is by far the **most important feature**, dominating both linear and tree-based models.
+    - In Gradient Boosting and XGBoost, `OddsDif` alone accounts for more than **50%** of total importance.
 
-- **Mid-level features:**  
-  Grappling-related variables like `AvgTDDif` and `AvgSubAttDif` show moderate importance, particularly in tree-based models. Weight category indicators (e.g., `WeightGroup_Heavy`) also contribute meaningfully in XGBoost and Gradient Boosting, aligning with the known higher KO power and fight-ending potential in heavier divisions.
+- **Secondary features:**
+  - `AgeDif`, `SigStrDif`, `AvgTDDif`, `ReachDif`, `RedSubPerFight`, `RedWinRatio`, `BlueKOPerFight`
 
-- **Low-importance features:**  
-  Variables such as `ReachAdvantageRatioDif`, `HeightReachRatioDif`, `SubDif`, `KODif`, and `LoseStreakDif` consistently rank at the bottom across models, suggesting limited predictive contribution in the current setup.
+- **Key observations:**
+  - Linear models assign extremely high coefficients to `OddsDif`, reducing reliance on all other features.
+  - Tree-based models still incorporate performance metrics, but `OddsDif` consistently sits at the top.
+  - The introduction of betting odds tends to **stabilize** model performance and shift attention away from nuanced technical details.
 
-- **Model-specific patterns:**  
-  Linear models (e.g., Logistic Regression, SVM) heavily rely on `OddsDif`, while ensemble and boosted models (e.g., Random Forest, XGBoost) balance performance metrics, weight groups, and historical stats.
+---
 
-This analysis highlights that while betting odds carry strong baseline predictive power, adding well-engineered sports performance features enhances model robustness and interpretability.
+### 🧩 Conclusion
+
+- Without odds, models must infer advantage purely from physical and statistical differences between fighters.
+- With odds, models gain access to a **powerful proxy of market knowledge**, which reflects public perception, fighter form, injury rumors, and expert insights—all aggregated into a single feature.
+- This results in higher predictive accuracy and more calibrated outputs, but also **reduces model reliance on handcrafted features**.
+
+> Betting odds act as a real-world prior, dramatically enhancing model confidence—but at the cost of reduced interpretability and generalization when odds are unavailable.
+
 
 ## 📈 Model Performance Summary
 
 The table below summarizes the main evaluation metrics for all trained models (values computed via `metrics.py` and experiment logs):
 
-| Model                          | Accuracy | Precision | Recall  | F1 Score | ROC AUC | Brier Score |
-|---------------------------------|----------|-----------|---------|----------|---------|-------------|
-| Logistic Regression             | 0.6595   | 0.6112    | 0.5179  | 0.5607   | 0.7132  | 0.2146      |
-| Random Forest                  | 0.6578   | 0.6214    | 0.4722  | 0.5366   | 0.7057  | 0.2143      |
-| Support Vector Machine         | 0.6586   | 0.6068    | 0.5298  | 0.5657   | 0.7115  | 0.2128      |
-| K-Nearest Neighbors           | 0.6037   | 0.5363    | 0.4107  | 0.4652   | 0.6297  | 0.2383      |
-| AdaBoost                        | 0.6553   | 0.6264    | 0.4425  | 0.5186   | 0.7102  | 0.2172      |
-| Naive Bayes                    | 0.6228   | 0.5464    | 0.5952  | 0.5698   | 0.6597  | 0.2405      |
-| Extra Trees                     | 0.6478   | 0.6116    | 0.4405  | 0.5121   | 0.6816  | 0.2212      |
-| Gradient Boosting             | 0.6578   | 0.6396    | 0.4226  | 0.5090   | 0.7117  | 0.2161      |
-| Quadratic Discriminant Analysis | 0.6495   | 0.5950    | 0.5159  | 0.5526   | 0.6885  | 0.2216      |
-| Neural Network                | 0.6536   | 0.5965    | 0.5397  | 0.5667   | 0.7054  | 0.2141      |
-| XGBoost                         | 0.6578   | 0.6148    | 0.4940  | 0.5479   | 0.7097  | 0.2116      |
+## 📊 Model Performance Summary
 
+| Model                        | Accuracy | Balanced Accuracy | Precision Red | Recall Red | F1 Red | Precision Blue | Recall Blue | F1 Blue | F1 Macro | ROC AUC | Brier Score | MCC    | Kappa  |
+|-----------------------------|----------|-------------------|----------------|------------|--------|----------------|-------------|---------|----------|---------|--------------|--------|--------|
+| Logistic Regression         | 0.6636   | 0.6459            | 0.6925         | 0.7561     | 0.7229 | 0.6136         | 0.5357      | 0.5720  | 0.6475   | 0.7145  | 0.2138       | 0.2989 | 0.2970 |
+| Random Forest               | 0.6669   | 0.6430            | 0.6840         | 0.7920     | 0.7340 | 0.6320         | 0.4940      | 0.5546  | 0.6443   | 0.7062  | 0.2142       | 0.3006 | 0.2049 |
+| Support Vector Machine      | 0.6669   | 0.6499            | 0.6962         | 0.7561     | 0.7249 | 0.6171         | 0.5437      | 0.5781  | 0.6515   | 0.7142  | 0.2130       | 0.3064 | 0.3048 |
+| K-Nearest Neighbors         | 0.5945   | 0.5688            | 0.6303         | 0.7288     | 0.6760 | 0.5215         | 0.4087      | 0.4583  | 0.5671   | 0.6121  | 0.2415       | 0.1445 | 0.2349 |
+| AdaBoost                    | 0.6553   | 0.6258            | 0.6675         | 0.8092     | 0.7315 | 0.6264         | 0.4425      | 0.5186  | 0.6251   | 0.7007  | 0.2173       | 0.2719 | 0.2623 |
+| Naive Bayes                 | 0.6170   | 0.6219            | 0.7019         | 0.6500     | 0.6417 | 0.5358         | 0.6528      | 0.5886  | 0.6151   | 0.6618  | 0.2568       | 0.2408 | 0.2367 |
+| Extra Trees                 | 0.6370   | 0.6087            | 0.6567         | 0.7848     | 0.7150 | 0.5924         | 0.4325      | 0.5000  | 0.6075   | 0.6575  | 0.2259       | 0.2327 | 0.2258 |
+| Gradient Boosting           | 0.6610   | 0.6396            | 0.6840         | 0.7733     | 0.7259 | 0.6174         | 0.5060      | 0.5562  | 0.6410   | 0.7023  | 0.2140       | 0.2901 | 0.2864 |
+| Quadratic Discriminant Analysis | 0.6570 | 0.6410          | 0.6908         | 0.7403     | 0.7147 | 0.6013         | 0.5417      | 0.5699  | 0.6423   | 0.6959  | 0.2208       | 0.2870 | 0.2859 |
+| Neural Network              | 0.6536   | 0.6433            | 0.6993         | 0.7073     | 0.7033 | 0.5887         | 0.5794      | 0.5840  | 0.6436   | 0.6968  | 0.2172       | 0.2873 | 0.2873 |
+| XGBoost                     | 0.6578   | 0.6332            | 0.6765         | 0.7862     | 0.7273 | 0.6189         | 0.4802      | 0.5408  | 0.6340   | 0.7068  | 0.2122       | 0.2806 | 0.2749 |
+
+## 📈 Model Performance Summary (No Odds)
+
+| Model                                | Accuracy | Balanced Accuracy | Precision Red | Recall Red | F1 Red | Precision Blue | Recall Blue | F1 Blue | F1 Macro | ROC AUC | Brier Score | MCC    | Kappa  |
+|-------------------------------------|----------|-------------------|----------------|------------|--------|----------------|-------------|---------|----------|---------|--------------|--------|--------|
+| Logistic Regression (no_odds)       | 0.6278   | 0.5890            | 0.6377         | 0.8307     | 0.7215 | 0.5973         | 0.3472      | 0.4391  | 0.5803   | 0.6291  | 0.2297       | 0.2045 | 0.1889 |
+| Random Forest (no_odds)             | 0.5828   | 0.5450            | 0.6099         | 0.7805     | 0.6847 | 0.5049         | 0.3095      | 0.3838  | 0.5342   | 0.5824  | 0.2412       | 0.1016 | 0.0951 |
+| Support Vector Machine (no_odds)    | 0.6278   | 0.5761            | 0.6248         | 0.8981     | 0.7369 | 0.6432         | 0.2540      | 0.3642  | 0.5505   | 0.6276  | 0.2300       | 0.2019 | 0.1660 |
+| K-Nearest Neighbors (no_odds)       | 0.5254   | 0.5101            | 0.5886         | 0.6055     | 0.5969 | 0.4318         | 0.4147      | 0.4231  | 0.5100   | 0.5058  | 0.3295       | 0.0203 | 0.0202 |
+| AdaBoost (no_odds)                  | 0.6070   | 0.5677            | 0.6240         | 0.8121     | 0.7057 | 0.5544         | 0.3234      | 0.4085  | 0.5571   | 0.6158  | 0.2348       | 0.1555 | 0.1438 |
+| Naive Bayes (no_odds)               | 0.5554   | 0.5631            | 0.6468         | 0.5151     | 0.5735 | 0.4768         | 0.6111      | 0.5357  | 0.5546   | 0.6003  | 0.2694       | 0.1249 | 0.1214 |
+| Extra Trees (no_odds)               | 0.5853   | 0.5494            | 0.6132         | 0.7733     | 0.6840 | 0.5093         | 0.3254      | 0.3971  | 0.5406   | 0.5851  | 0.2414       | 0.1100 | 0.1039 |
+| Gradient Boosting (no_odds)         | 0.6070   | 0.5730            | 0.6295         | 0.7848     | 0.6986 | 0.5482         | 0.3611      | 0.4354  | 0.5670   | 0.6098  | 0.2369       | 0.1610 | 0.1531 |
+| QDA (no_odds)                       | 0.6170   | 0.5906            | 0.6454         | 0.7547     | 0.6958 | 0.5570         | 0.4266      | 0.4831  | 0.5895   | 0.6318  | 0.2330       | 0.1915 | 0.1873 |
+| Neural Network (no_odds)            | 0.6278   | 0.5802            | 0.6286         | 0.8766     | 0.7322 | 0.6245         | 0.2837      | 0.3902  | 0.5612   | 0.6344  | 0.2291       | 0.2014 | 0.1734 |
+| XGBoost (no_odds)                   | 0.6020   | 0.5703            | 0.6287         | 0.7676     | 0.6912 | 0.5371         | 0.3730      | 0.4403  | 0.5657   | 0.5994  | 0.2414       | 0.1527 | 0.1468 |
 
 > 📌 *Complete results and additional visualizations can be inspected in `notebooks/05-model_experiments.ipynb`.*
 
@@ -185,13 +243,17 @@ The table below summarizes the main evaluation metrics for all trained models (v
 
 ### 📊 Metrics Analysis and Predictive Limits
 
-- Across all models, we observe a convergence around ~65% accuracy, with the best models (Neural Network, Logistic Regression, SVM) reaching slightly above 0.65–0.66. This performance plateau suggests that the dataset likely has limited additional predictive power beyond what is already captured by the current features and models.
+- To avoid corner-based bias (favoring Red or Blue arbitrarily), all models in this project were tuned using F1 Macro as the primary scoring metric during GridSearchCV. This ensures that the classifier balances performance across both classes — rewarding models that perform well on underdog Blue wins just as much as favorites. This choice is especially important in UFC fights, where class imbalance (e.g., favorites vs. underdogs) can skew metrics like accuracy.
 
-- It is important to highlight the inherent stochasticity of UFC fights: combat sports are highly dynamic and often unpredictable. A useful mental exercise is to imagine the same two fighters facing each other on different days—the outcome could realistically flip depending on minor factors, strategy, or randomness. This sets a natural upper bound for predictive performance, beyond which even the best models cannot generalize reliably.
+- When comparing models trained with and without betting odds, we consistently observe that the highest predictive performance peaks around 66–67% accuracy for models that include odds (e.g., SVM, Logistic Regression, Random Forest), while no-odds models plateau slightly lower, around 62–63% at best. This gap reinforces the predictive value of market signals, but also confirms a natural ceiling in the dataset's discriminative power.
 
-- Metrics like ROC-AUC (~0.71 for top models) indicate that the models do have meaningful discriminative power, but the moderate F1 scores and Brier scores show that prediction confidence and calibration are far from perfect. Additionally, the drop in recall across many models (especially tree-based ones) suggests that they tend to favor the majority class or struggle with edge cases.
+- Among no-odds models, the best performers (Logistic Regression, Neural Network, QDA) still achieve reasonably high recall for the Red corner (≥0.75), but struggle in correctly identifying Blue wins — as evidenced by low Recall Blue scores (<0.45) and imbalanced F1 scores. This asymmetry reflects the challenges in capturing underdog victories without external priors like odds.
 
-In summary, while machine learning models can extract useful patterns from fighter stats and historical data, the chaotic nature of MMA limits deterministic prediction accuracy, making ~66% a realistic ceiling under the current setup.
+- Across all models, ROC AUC scores range from ~0.60 to 0.71, indicating that while classifiers can separate classes better than chance, the confidence of predictions remains moderate, especially in edge cases. Brier scores, typically between 0.21 and 0.27, also suggest that probability calibration could be improved.
+
+- Most ensemble models (e.g., Random Forest, Extra Trees) show high recall for the Red corner, but their F1 Blue and Precision Blue are low, suggesting a bias toward the majority class — a sign of class imbalance or insufficient feature diversity for upsets.
+
+- Ultimately, combat sports like MMA are inherently stochastic, and outcomes can flip based on unpredictable variables (e.g., game plan, injuries, judging). Even the most optimized ML models are unlikely to consistently exceed ~66% accuracy on such data without introducing richer inputs like stylistic breakdowns, real-time metrics, or temporal context (e.g., training camp quality, layoffs, fight location). While machine learning models can extract useful patterns from fighter stats and historical data, the chaotic nature of MMA limits deterministic prediction accuracy, making ~66% a realistic ceiling under the current setup.
 
 ## 🧩 Feature Descriptions
 
@@ -228,16 +290,42 @@ In summary, while machine learning models can extract useful patterns from fight
 
 
 <p align="center">
-  <img src="img/distribution1.png" alt="Processed feature distribution part 1" width="100%"/>
+  <img src="img/Feature-distribution-1-3.png" alt="Processed feature distribution part 1" width="100%"/>
 </p>
 
 <p align="center">
-  <img src="img/distribution2.png" alt="Processed feature distribution part 2" width="100%"/>
+  <img src="img/Feature-distribution-2-3.png" alt="Processed feature distribution part 2" width="100%"/>
 </p>
+
+<p align="center">
+  <img src="img/Feature-distribution-3-3.png" alt="Processed feature distribution part 3" width="100%"/>
+</p>
+
+<p align="center">
+  <img src="img/Correlation-matrix.png" alt="Processed feature distribution part 3" width="100%"/>
+</p>
+
+## 🔬 Noise-Based Feature Selection
+
+To improve feature selection, we conducted a **Noise-Based Feature Selection** experiment. A synthetic random feature (`Random_Noise`) was added to the dataset using `UFCData.add_random_feature()`, and feature importance was analyzed across multiple models. Any real feature showing lower importance than the random column was considered uninformative and a candidate for exclusion.
+
+This iterative process helped refine the feature set, striking a balance between **model complexity, interpretability, and predictive performance**.  
+**Below: on the left, feature importances with the random noise benchmark; on the right, after applying several feature engineering refinements, with the random noise column removed:**
+
+<p align="center">
+  <img src="img/Noise-based-feature-selection-1-2.png" alt="Feature importances with random noise benchmark" width="47%"/>
+  <img src="img/Noise-based-feature-selection-2-2.png" alt="Feature importances with random noise benchmark" width="47%"/>
+</p>
+
+---
 
 ## 🚀 Getting Started
 
-To run the pipeline locally:
+You can interact with UFC Fight Predictor in two ways:
+
+---
+
+### 🧪 Run the pipeline via notebooks
 
 1. **Clone the repository**
 
@@ -252,8 +340,60 @@ cd ufc-predictor
 pip install -r requirements.txt
 ```
 
-3. **Run the notebooks** Start from `notebooks/01-etl.ipynb` and proceed step by step through to `05-model_experiments.ipynb`.
+3. **Run the pipeline notebooks**
 
+Follow the workflow step by step:
+
+- `notebooks/01-etl.ipynb` → Data cleaning and preparation  
+- `notebooks/02-eda.ipynb` → Exploratory data analysis  
+- `notebooks/03-feature_engineering.ipynb` → Feature construction  
+- `notebooks/04-training.ipynb` → Model training and tuning  
+- `notebooks/05-model_experiments.ipynb` → Evaluation and comparison  
+- `notebooks/06-deployment.ipynb` → CLI integration and deployment flow
+
+### 🖥️ Launch the CLI App (Dockerized)
+
+You can simulate UFC fights or build custom matchups using an interactive CLI interface powered by `rich`.
+
+#### ✅ Quick Launch with `ufc.sh`
+
+If you're on Unix/Linux/macOS, use the provided script to build and run the app automatically:
+
+```bash
+chmod +x ufc.sh
+./ufc.sh
+```
+
+This script will:
+
+- Check if the Docker image exists (and build it if necessary)
+
+- Launch the CLI inside a container
+
+- Mount your local models and datasets
+
+🛠️ Manual Docker Usage (Alternative)
+
+1. Build the Docker image
+```bash
+docker build -t ufc-cli .
+```
+2. Run the CLI interactively
+```bash
+docker run -it ufc-cli
+```
+
+ℹ️ Make sure the models/ and data/processed/ directories exist and contain your trained models and preprocessed datasets. The CLI will automatically load them.
+
+Once running, the CLI allows you to:
+
+- 🔎 Simulate historical matchups between known fighters
+
+- 🧠 Predict outcomes using multiple models (with or without betting odds)
+
+- 🧪 Create and test custom fight scenarios
+
+- 📈 View model performance metrics and confusion matrices
 ---
 
 ## 📚 Documentation
