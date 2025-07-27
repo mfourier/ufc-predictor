@@ -420,6 +420,7 @@ def view_documentation():
 
     selected_pretty = select_from_list(options, "📚 Select documentation file to view")
     if selected_pretty is None:
+        clear_console()
         return
 
     selected_file = reverse_map[selected_pretty]
