@@ -38,6 +38,9 @@ ufc.bat
   <img src="img/ufc_prediction.png" alt="UFC Prediction" width="45%"/>
 </p>
 
+## 🎮 Demo: UFC Fight Predictor CLI
+[![Watch the video](https://img.youtube.com/vi/nO5qj_utapY/maxresdefault.jpg)](https://www.youtube.com/watch?v=nO5qj_utapY)
+
 ## 🎯 Objective
 
 This project aims to build a robust **binary classification model** to predict the winner of a UFC fight. The model estimates whether **Fighter Red** or **Fighter Blue** is more likely to win based on differences in physical attributes, fighting styles, and recent performances.
