@@ -42,7 +42,7 @@ ufc.bat
 
 This project aims to build a robust **binary classification model** to predict the winner of a UFC fight. The model estimates whether **Fighter Red** or **Fighter Blue** is more likely to win based on differences in physical attributes, fighting styles, and recent performances.
 
-By transforming fighter-level data into **relative feature vectors**, the model learns from historical outcomes and generalizes effectively to future matchups.
+By transforming fighter-level data into **relative feature vectors**, the model learns from historical outcomes and generalizes to future matchups.
 
 ---
 
@@ -120,40 +120,10 @@ The following classifiers have been integrated and carefully tuned, all coordina
 - 🔹 **Deep Learning**
   - ✅ **Neural Networks (MLP)**: Multi-layer perceptron capable of capturing complex, non-linear relationships.
 
----
-
-## 🧪 Project Structure
-
-```bash
-ufc-predictor/
-├── app.py                            # Main entry point
-├── data/
-│   ├── raw/                          # Original fight data
-│   ├── processed/                    # Cleaned and transformed datasets
-│   └── results/                      # Evaluation logs, metrics, model reports
-├── notebooks/
-│   ├── 01-etl.ipynb                  # Data extraction and cleaning
-│   ├── 02-eda.ipynb                  # Exploratory Data Analysis
-│   ├── 03-feature_engineering.ipynb  # Feature engineering using UFCData
-│   ├── 04-training.ipynb             # Model training using the training set
-│   ├── 05-model_experiments.ipynb    # Model comparison and results analysis
-│   └── 06-deployment.ipynb           # Deployment exploration and integration
-├── src/
-│   ├── config.py                     # Model hyperparameters and registry
-│   ├── data.py                       # UFCData class: manages data splits and transformations
-│   ├── helpers.py                    # Utility and preprocessing functions
-│   ├── io_model.py                   # Save/load model objects from disk
-│   ├── metrics.py                    # Evaluation metrics and plots
-│   ├── model.py                      # UFCModel class: Wrapper class for saving, loading, and evaluating models
-│   ├── model_factory.py              # Central model selection logic
-│   └── predictor.py                  # UFCPredictor class: interactive fight prediction interface
-├── docs/                             # Markdown documentation per model
-├── img/                              # Images for plots, logos, and visuals
-└── requirements.txt                  # Project dependencies
-
-```
-
----
+<p align="center">
+  <img src="img/Feature-importance-with-odds.png" alt="Feature importances for model with odds" width="45%"/>
+  <img src="img/Feature-importance-no-odds.png" alt="Feature importances for model without odds" width="45%"/>
+</p>
 
 ## 🧠 Feature Importance Analysis (With vs. Without Odds)
 
@@ -394,6 +364,39 @@ Once running, the CLI allows you to:
 - 🧪 Create and test custom fight scenarios
 
 - 📈 View model performance metrics and confusion matrices
+---
+
+## 🧪 Project Structure
+
+```bash
+ufc-predictor/
+├── app.py                            # Main entry point
+├── data/
+│   ├── raw/                          # Original fight data
+│   ├── processed/                    # Cleaned and transformed datasets
+│   └── results/                      # Evaluation logs, metrics, model reports
+├── notebooks/
+│   ├── 01-etl.ipynb                  # Data extraction and cleaning
+│   ├── 02-eda.ipynb                  # Exploratory Data Analysis
+│   ├── 03-feature_engineering.ipynb  # Feature engineering using UFCData
+│   ├── 04-training.ipynb             # Model training using the training set
+│   ├── 05-model_experiments.ipynb    # Model comparison and results analysis
+│   └── 06-deployment.ipynb           # Deployment exploration and integration
+├── src/
+│   ├── config.py                     # Model hyperparameters and registry
+│   ├── data.py                       # UFCData class: manages data splits and transformations
+│   ├── helpers.py                    # Utility and preprocessing functions
+│   ├── io_model.py                   # Save/load model objects from disk
+│   ├── metrics.py                    # Evaluation metrics and plots
+│   ├── model.py                      # UFCModel class: Wrapper class for saving, loading, and evaluating models
+│   ├── model_factory.py              # Central model selection logic
+│   └── predictor.py                  # UFCPredictor class: interactive fight prediction interface
+├── docs/                             # Markdown documentation per model
+├── img/                              # Images for plots, logos, and visuals
+└── requirements.txt                  # Project dependencies
+
+```
+
 ---
 
 ## 📚 Documentation
