@@ -29,7 +29,7 @@ ufc.bat
 > Launches the Dockerized CLI App to simulate UFC fights and test models.
 
 <p align="center">
-  <img src="img/ufc_sh.gif" alt="UFC CLI Demo" width="65%" />
+  <img src="img/ufc_sh.gif" alt="UFC CLI Demo" width="85%" />
 </p>
 
 ---
