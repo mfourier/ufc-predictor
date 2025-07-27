@@ -418,6 +418,26 @@ Comprehensive project documentation is available in the `docs/` folder, covering
 
 ---
 
+## 🚧 What's Next
+
+This project lays the foundation for UFC fight prediction using structured statistics and market signals. Moving forward, we aim to transform it into a **serious betting-grade model** by integrating richer data and more powerful algorithms:
+
+- 🔁 **Upgrade dataset**  
+  We are switching to a more comprehensive dataset, including detailed fight-level statistics, injury records, and fighter time-series. This will reduce noise and increase signal for both favorites and underdogs.
+
+- 🧠 **Integrate AutoGluon**  
+  Replace classic scikit-learn models with **AutoGluon**, a powerful AutoML framework capable of handling heterogeneous feature types, boosting ensemble performance, and improving calibration — all with minimal tuning.
+
+- 💸 **Towards real-world betting utility**  
+  Combine predictive probabilities with betting odds to assess **value bets** and **expected return**, aiming to simulate actual betting strategies (e.g., Kelly criterion, flat betting). This will enable backtesting of UFC betting models in realistic scenarios.
+
+- 🌐 **Deployment roadmap**  
+  Evaluate deployment on a lightweight web interface (e.g., Streamlit) and explore future REST API endpoints for remote prediction.
+
+> Stay tuned for **UFC-Predictor v2** — a new chapter focused on generalization, betting ROI, and high-stakes predictive modeling.
+
+---
+
 ## 🙏 Acknowledgements
 
 We thank [shortlikeafox](https://github.com/shortlikeafox/ultimate_ufc_dataset) for their excellent work compiling the UFC dataset used as the foundation of this project. Their contribution made it possible to train and evaluate predictive models on historical fight outcomes.
