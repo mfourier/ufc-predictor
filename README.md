@@ -178,8 +178,6 @@ Once the feature `OddsDif` is introduced (capturing the difference in betting od
 
 The table below summarizes the main evaluation metrics for all trained models (values computed via `metrics.py` and experiment logs):
 
-## 📊 Model Performance Summary
-
 | Model                        | Accuracy | Balanced Accuracy | Precision Red | Recall Red | F1 Red | Precision Blue | Recall Blue | F1 Blue | F1 Macro | ROC AUC | Brier Score | MCC    | Kappa  |
 |-----------------------------|----------|-------------------|----------------|------------|--------|----------------|-------------|---------|----------|---------|--------------|--------|--------|
 | Logistic Regression         | 0.6636   | 0.6459            | 0.6925         | 0.7561     | 0.7229 | 0.6136         | 0.5357      | 0.5720  | 0.6475   | 0.7145  | 0.2138       | 0.2989 | 0.2970 |
